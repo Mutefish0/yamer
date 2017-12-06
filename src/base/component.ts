@@ -1,4 +1,4 @@
-export default abstract class Component {
+export default abstract class Component{
     private fragment: DocumentFragment
     private componentRootNode: Node
     private parentNode: Node
@@ -10,9 +10,9 @@ export default abstract class Component {
         this.wiring(this.refs)
     }
 
-    abstract construct(container: DocumentFragment): { [key: string]: HTMLElement }
-
     abstract wiring (elements: { [key: string]: HTMLElement }): any
+
+    abstract construct (container: DocumentFragment): { [key: string]: HTMLElement }
 
     mount (node: Node) {
         node.appendChild(this.fragment)

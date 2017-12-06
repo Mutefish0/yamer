@@ -5,8 +5,8 @@ let spawn = require('child_process').spawn
 let electron = require('electron')
 
 let commands = {
-    'tsc': 'tsc src/main.ts -m es2015 --outDir dist -w',
-    'rollup': 'rollup dist/main.js --format iife --output dist/bundle.js'
+    'tsc': 'tsc -w',
+    'rollup': 'rollup -c'
 }
 
 gulp.task('tsc-watch', function (cb) {
@@ -23,7 +23,6 @@ gulp.task('tsc-watch', function (cb) {
             gulp.start('electron-reload')
         }
     })
-
 })
 
 gulp.task('rollup', function (cb) {

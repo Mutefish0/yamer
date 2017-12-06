@@ -19,6 +19,7 @@
     "electron": "~1.7.8",
     "gulp": "*",
     "rollup": "*",
+    "rollup-plugin-typescript-path-mapping": "^1.0.1",
     "typescript": "^2.5.3"
   },
   "dependencies": {
