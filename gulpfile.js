@@ -40,7 +40,7 @@ gulp.task('electron', function (cb) {
 })
 
 gulp.task('browser-test', function (cb) {
-    exec('rollup -c --input test/browser/test.ts -o dist/test.js', function (err) {
+    exec('rollup -c --format iife --input test/browser/test.ts -o dist/test.js', function (err) {
         if (err) {
             cb()
             console.log(err)

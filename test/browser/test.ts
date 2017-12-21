@@ -1,3 +1,1 @@
-alert(1)
-
-window.close()
+import './modules/test-rangy'
