@@ -3,8 +3,7 @@
         "baseUrl": "./",
         "paths": {
             "base/*": ["src/base/*"],
-            "browser/*": ["src/browser/*"],
-            "browser/tag/*": ["src/browser/*/m.ts"]
+            "browser/*": ["src/browser/*"]
         },
         "outDir": "dist",
         "module": "es2015",

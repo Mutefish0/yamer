@@ -1,10 +1,18 @@
-const rollupPluginTypescriptPathMapping = require('rollup-plugin-typescript-path-mapping')
+import typescript from 'rollup-plugin-typescript';
 
-module.exports = {
-    input: 'dist/main.js',
+export default {
+    input: 'src/main.ts',
     output: {
         file: 'dist/bundle.js',
-        format: 'iife'
+        format: 'iife',
+        sourcemap: true
     },
-    plugins: [rollupPluginTypescriptPathMapping({ tsconfig: true })]
+    plugins: [
+        typescript({
+            typescript: require('typescript')
+        })
+    ],
+    watch: {
+        include: 'src/**'
+    }
 }

@@ -2,7 +2,11 @@ function ElementCreator (tagName, props?: Object): HTMLElement {
     let el = document.createElement(tagName)
     for (let attrName in props) {
         if (attrName !== 'style') {
-            el.setAttribute(attrName, props[attrName])
+            if (attrName == 'innerText' || attrName == 'innerHTML') {
+                el[attrName] = props[attrName]
+            } else {
+                el.setAttribute(attrName, props[attrName])
+            }
         } else {
             for (let styleName in props[attrName]) {
                 el.style[styleName] = props[attrName][styleName]
@@ -46,4 +50,8 @@ export function li (props): HTMLLIElement {
 
 export function button (props): HTMLButtonElement {
     return ElementCreator.call(null, 'button', props)
+}
+
+export function text (content): Text {
+    return document.createTextNode(content)
 }

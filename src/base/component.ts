@@ -6,13 +6,10 @@ export default abstract class Component{
 
     constructor () {
         this.fragment = document.createDocumentFragment()
-        this.refs = this.construct(this.fragment)
-        this.wiring(this.refs)
+        this.build(this.fragment)
     }
 
-    abstract wiring (elements: { [key: string]: HTMLElement }): any
-
-    abstract construct (container: DocumentFragment): { [key: string]: HTMLElement }
+    abstract build (container: DocumentFragment)
 
     mount (node: Node) {
         node.appendChild(this.fragment)

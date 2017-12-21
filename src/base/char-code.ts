@@ -25,6 +25,11 @@ export const enum CharCode {
 	 */
     CarriageReturn = 13,
     Space = 32,
+    BackSpace = 8,
+    Left = 37,
+    Up = 38,
+    Right = 39,
+    Down = 40,
 	/**
 	 * The `!` character.
 	 */

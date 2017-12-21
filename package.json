@@ -4,7 +4,7 @@
   "description": "极客的笔记本",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "gulp browser-test",
     "dev": "gulp"
   },
   "keywords": [
@@ -19,10 +19,12 @@
     "electron": "~1.7.8",
     "gulp": "*",
     "rollup": "*",
-    "rollup-plugin-typescript-path-mapping": "^1.0.1",
+    "rollup-plugin-typescript": "^0.8.1",
     "typescript": "^2.5.3"
   },
   "dependencies": {
-    "immutable": "^3.8.2"
+    "@types/rx": "^4.1.1",
+    "immutable": "^3.8.2",
+    "rxjs-es": "^5.0.0-beta.12"
   }
 }
