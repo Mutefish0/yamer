@@ -4,8 +4,8 @@ let spawn = require('child_process').spawn
 
 let electron = require('electron')
 
-gulp.task('rollup-watch', function (cb) {
-    let child = exec('rollup -c -w', function (err) { 
+gulp.task('rollup-watch', cb => {
+    let child = exec('rollup -c -w', err => { 
         if (err) {
             cb()
             console.log(err)
@@ -13,7 +13,7 @@ gulp.task('rollup-watch', function (cb) {
             cb()
         }
     })
-    child.stderr.on('data', function (data) {
+    child.stderr.on('data', data => {
         if (data.indexOf('created') == 0) {
             gulp.start('electron-reload')
         }    
@@ -22,7 +22,7 @@ gulp.task('rollup-watch', function (cb) {
 
 
 let electron_process
-gulp.task('electron-reload', function (cb) {
+gulp.task('electron-reload', cb => {
     // 通过stdout向electron发送刷新页面的消息
     if (electron_process) {
         electron_process.stdout.write(JSON.stringify({ command: 'reload' }))
@@ -30,27 +30,46 @@ gulp.task('electron-reload', function (cb) {
     cb()
 })
 
-gulp.task('electron', function (cb) {
+gulp.task('electron', cb => {
     let child = spawn(electron, ['.'], { stdio: 'pipe' })
-    child.on('close', function (code) {
+    child.on('close', code => {
         process.exit(code)
     })
     electron_process = child
     cb()
 })
 
-gulp.task('browser-test', function (cb) {
-    exec('rollup -c --format iife --input test/browser/test.ts -o dist/test.js', function (err) {
-        if (err) {
+
+function rollupTest () {
+    return new Promise((resolve, reject) => {
+        exec('rollup -c --format iife --input test/browser/test.ts -o dist/test.js',  err => {
+            if (err) {
+                reject(err)
+            } else {
+                resolve()
+            }
+        })
+    })
+}
+
+gulp.task('browser-test', cb => {
+    rollupTest().then(() => {
+        let child = spawn(electron, ['test/browser/index.js'], { stdio: 'pipe' })
+        child.on('close', code => {
+            process.exit(code)
             cb()
-            console.log(err)
-        } else {
-            let child = spawn(electron, ['test/browser/index.js'], { stdio: 'pipe' })
-            child.on('close', function (code) {
-                cb()
-                process.exit(code)
-            })
-        }
+        })
+        child.stdout.on('data', data => {
+            if (data == 'recompile') {
+                rollupTest().then(() => {
+                    child.stdout.write('reload')
+                })
+            }
+        })
+
+    }, (err) => {
+        cb()
+        console.log(err)
     })
 })
 

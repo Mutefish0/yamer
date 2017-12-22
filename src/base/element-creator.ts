@@ -2,7 +2,7 @@ function ElementCreator (tagName, props?: Object): HTMLElement {
     let el = document.createElement(tagName)
     for (let attrName in props) {
         if (attrName !== 'style') {
-            if (attrName == 'innerText' || attrName == 'innerHTML') {
+            if (attrName == 'innerText' || attrName == 'textContent'|| attrName == 'innerHTML') {
                 el[attrName] = props[attrName]
             } else {
                 el.setAttribute(attrName, props[attrName])

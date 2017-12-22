@@ -1,1 +1,2 @@
-import './modules/test-rangy'
+import './modules/rangy'
+
