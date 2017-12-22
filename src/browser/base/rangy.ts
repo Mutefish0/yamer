@@ -42,9 +42,9 @@ export default class Rangy extends Range {
     /**
      * 扩展左边界
      */
-    public extendLeftBoundary (count: number): boolean {
+    public extendLeftBoundary (count: number, textOnly: boolean = false): boolean {
         const bp = new BoundaryPoint(this.startContainer, this.startOffset)
-        if (bp.decrease(count)) {
+        if (bp.decrease(count, textOnly)) {
             this.setStartFromPoint(bp)
             return true
         } else {
@@ -55,9 +55,9 @@ export default class Rangy extends Range {
     /**
      * 不修改原来的对象，返回新的对象
      */
-    public leftBoundaryExtended (count: number): Rangy {
+    public leftBoundaryExtended (count: number, textOnly: boolean = false): Rangy {
         let clonedRangy = this.clone()
-        if (clonedRangy.extendLeftBoundary(count)) {
+        if (clonedRangy.extendLeftBoundary(count, textOnly)) {
             return clonedRangy
         } else {
             return null
@@ -67,9 +67,9 @@ export default class Rangy extends Range {
     /**
      * 扩展右边界
      */
-    public extendRightBoundary (count: number): boolean {
+    public extendRightBoundary (count: number, textOnly: boolean = false): boolean {
         const bp = new BoundaryPoint(this.endContainer, this.endOffset)
-        if (bp.increase(count)) {
+        if (bp.increase(count, textOnly)) {
             this.setEndFromPoint(bp)
             return true
         } else {
@@ -80,28 +80,44 @@ export default class Rangy extends Range {
     /**
      * 不修改原来的对象，返回新的对象
      */
-    public rightBoundaryExtended (count: number): Rangy {
+    public rightBoundaryExtended (count: number, textOnly: boolean = false): Rangy {
         let clonedRangy = this.clone()
-        if (clonedRangy.extendRightBoundary(count)) {
+        if (clonedRangy.extendRightBoundary(count, textOnly)) {
             return clonedRangy
         } else {
             return null
         }
     }
 
+    /**
+     * @param count 指定扩展的字符数
+     */
     public extendLeftContent (count: number): boolean {
-        try {
-            return true
-        } catch (e) {
-            return false
-        }
+        return this.extendLeftBoundary(count, true)
     }
 
-    public extendRightContent (count: number): boolean {
-        try {
-            return true
-        } catch (e) {
-            return false
-        }
+    /**
+     * 
+     * @param count 字符数
+     * 返回新的Rangy对象
+     */
+    public leftContentExtended (count: number): Rangy {
+        return this.leftBoundaryExtended(count, true)
     }
+
+    /**
+     * @param count 指定扩展的字符数
+     */
+    public extendRightContent (count: number): boolean {
+        return this.extendRightBoundary(count, true)
+    }
+
+    /**
+     * @param count 字符数 
+     * 返回新的Rangy对象
+     */
+    public rightContentExtended (count: number): Rangy {
+        return this.rightBoundaryExtended(count, true)
+    }
+
 }

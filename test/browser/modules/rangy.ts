@@ -1,4 +1,4 @@
-import { div, span, text } from 'base/element-creator'
+import { div, span, text, img } from 'base/element-creator'
 import Rangy from 'browser/base/rangy'
 
 describe('Rangy', function () {
@@ -8,6 +8,7 @@ describe('Rangy', function () {
      *       <div id="d2">
      *           <span id="sp0">cool</span>
      *           <span id="sp">hello world</span>
+     *           <img>
      *       </div>
      *    <div>
      */
@@ -17,9 +18,11 @@ describe('Rangy', function () {
     const sp = span()
     const t0 = text('cool')
     const t = text('hello world')
+    const image = img()
     d1.appendChild(d2)
     d2.appendChild(sp0)
     d2.appendChild(sp)
+    d2.appendChild(image)
     sp0.appendChild(t0)
     sp.appendChild(t)
 
@@ -124,11 +127,65 @@ describe('Rangy', function () {
 
         it('extend right boundary that will return false', function () {
             const r = new Rangy()
+
+            r.setStart(t0, 1) 
+            r.setEnd(d2, 3)
+            r.extendRightBoundary(1).should.ok()
+            r.extendRightBoundary(1).should.false()
+        })
+
+        it('go into img and go out img', function () {
+            const r = new Rangy()
+            r.setStart(t0, 1)
+            r.setEnd(d2, 2) 
+            r.toString().should.equal('oolhello world')
+
+            r.extendRightBoundary(1).should.ok()
+            r.endContainer.should.equal(image)
+            r.endOffset.should.equal(0)
+
+            r.extendRightBoundary(1).should.ok()
+            r.endContainer.should.equal(d2)
+            r.endOffset.should.equal(3)
+            r.toString().should.equal('oolhello world')
         })
 
     })
 
-    
+    describe('Rangy::extendLeftContent', function () {
+        it('extend left content', function () {
+            const r = new Rangy()
+
+            r.setStart(t0, 1)
+            r.setEnd(t0, 3)
+            r.toString().should.equal('oo')
+
+            r.extendLeftContent(1).should.ok()
+            r.toString().should.equal('coo')
+
+            r.extendLeftContent(1).should.false()
+            r.toString().should.equal('coo')
+        })
+    })
+
+    describe('Rangy::extendRightContent', function () {
+        it('extend right content', function () {
+            const r = new Rangy()
+
+            r.setStart(t0, 1)
+            r.setEnd(t0, 4)
+            r.toString().should.equal('ool')
+
+            r.extendRightContent(1).should.ok()
+            r.toString().should.equal('oolh')
+
+            r.extendRightContent(10).should.ok()
+            r.toString().should.equal('oolhello world')
+            
+            r.extendRightContent(1).should.false()
+            r.toString().should.equal('oolhello world')
+        })
+    }) 
 })
 
 export default 'Rangy'

@@ -30,14 +30,16 @@ export default class BoundaryPoint {
     /**
      * 移动count，使得其`tree order`增大count
      * @param count 
+     * @param textOnly 元素的边界不算在count内
      */
-    public increase (count: number = 1): boolean {
+    public increase (count: number = 1, textOnly: boolean = false): boolean {  
         if (count == 0) {
             return true
         } else if (count < 0) {
             return false
         } // ensure count >= 1 
 
+        const elementBorder = textOnly ? 0 : 1
         let container = this.container
         let offset = this.offset
 
@@ -47,14 +49,14 @@ export default class BoundaryPoint {
                 let child = container.childNodes[offset]
                 this.container = child as HTMLElement | Text
                 this.offset = 0
-                return this.increase(count - 1)
+                return this.increase(count - elementBorder, textOnly)
             } else { // offset == container.childNodes.length
                 // go out
                 let parent = container.parentNode
                 if (parent) {
                     this.container = parent as HTMLElement
                     this.offset = Array.prototype.indexOf.call(parent.childNodes, container) + 1
-                    return this.increase(count - 1)
+                    return this.increase(count - elementBorder, textOnly)
                 } else {
                     return false
                 }
@@ -69,7 +71,7 @@ export default class BoundaryPoint {
                 if (parent) {
                     this.container = parent as HTMLElement
                     this.offset = Array.prototype.indexOf.call(parent.childNodes, container) + 1
-                    return this.increase(count - container.textContent.length + offset - 1)
+                    return this.increase(count - container.textContent.length + offset - elementBorder, textOnly)
                 } else {
                     return false
                 }
@@ -80,14 +82,16 @@ export default class BoundaryPoint {
     /**
      * 移动count，使得其`tree order`减小count
      * @param count 
+     * @param textOnly 元素的边界不算在count内
      */
-    public decrease (count: number = 1): boolean {
+    public decrease (count: number = 1, textOnly: boolean = false): boolean {
         if (count == 0) {
             return true
         } else if (count < 0) {
             return false
         } // ensure count >= 1 
 
+        const elementBorder = textOnly ? 0 : 1
         let container = this.container
         let offset = this.offset
 
@@ -102,14 +106,14 @@ export default class BoundaryPoint {
                     this.container = child as Text
                     this.offset = child.textContent.length
                 }
-                return this.decrease(count - 1)
+                return this.decrease(count - elementBorder, textOnly)
             } else { // offset == 0
                 // go out
                 let parent = container.parentNode
                 if (parent) {
                     this.container = parent as HTMLElement
                     this.offset = Array.prototype.indexOf.call(parent.childNodes, container)
-                    return this.decrease(count - 1)
+                    return this.decrease(count - elementBorder, textOnly)
                 } else {
                     return false
                 }
@@ -124,7 +128,7 @@ export default class BoundaryPoint {
                 if (parent) {
                     this.container = parent as HTMLElement
                     this.offset = Array.prototype.indexOf.call(parent.childNodes, container)
-                    return this.decrease(count - offset - 1)
+                    return this.decrease(count - offset - elementBorder, textOnly)
                 } else {
                     return false
                 }
