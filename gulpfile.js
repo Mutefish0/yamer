@@ -33,7 +33,7 @@ gulp.task('electron-reload', cb => {
 gulp.task('electron', cb => {
     let child = spawn(electron, ['.'], { stdio: 'pipe' })
     child.on('close', code => {
-        process.exit(code)
+        process.exit(code) 
     })
     electron_process = child
     cb()

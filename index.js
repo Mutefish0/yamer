@@ -59,6 +59,11 @@ app.on('activate', function () {
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
-
+process.stdout.on('data', function (data) {
+    data = JSON.parse(data)
+    if (data.command == 'reload') {
+        mainWindow.loadURL(data.url || mainURL)
+    }
+})
 
 

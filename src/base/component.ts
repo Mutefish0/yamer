@@ -1,24 +1,42 @@
 export default abstract class Component{
     private fragment: DocumentFragment
-    private componentRootNode: Node
+    private componentRootNodes: Node[]
     private parentNode: Node
-    private refs: { [key: string]: HTMLElement }
+    private hasSettledElement: boolean
 
-    constructor () {
+    protected setElement (nodes: Node | Node[]) {
+        this.hasSettledElement = true
         this.fragment = document.createDocumentFragment()
-        this.build(this.fragment)
+        this.componentRootNodes = nodes instanceof Array ? nodes : [nodes]
     }
 
-    abstract build (container: DocumentFragment)
+    public mount (node: Node | Range) {
+        if (!this.hasSettledElement) {
+            console.warn(`component \`${this.constructor.name}\` is has no settled element.`)
+        }
 
-    mount (node: Node) {
-        node.appendChild(this.fragment)
-        this.parentNode = node 
-        this.componentRootNode = this.fragment.children[0]
+        let mountFunc = null        
+        if (node instanceof Node) {
+            mountFunc = node.appendChild
+        } else if (node instanceof Range) {
+            mountFunc = node.insertNode
+        } else {
+            mountFunc = () => {}
+        }
+
+        this.componentRootNodes.forEach(root => {
+            if (root) {
+                mountFunc.call(node, root)
+            }
+        });
+
+        this.parentNode = this.componentRootNodes[0].parentNode
     }
 
-    unmount () {
-        this.parentNode.removeChild(this.componentRootNode)
+    public unmount () {
+        this.componentRootNodes.forEach(root => {
+            this.parentNode.removeChild(root)
+        })
     }
 }
 

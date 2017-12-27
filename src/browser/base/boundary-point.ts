@@ -19,12 +19,31 @@ function isContainerOtherwiseText (node: Node): boolean {
  * 但是相对另一个BoundaryPoint的大小差值是不变的
  */
 export default class BoundaryPoint {
+    private static rangeA: Range = new Range()
+    private static rangeB: Range = new Range()
+
     public container: Text | HTMLElement
     public offset: number
 
-    constructor(container, offset) {
+    constructor (container = document as Node, offset = 0) {
+        this.setPoint(container, offset)
+    }
+
+    setPoint (container, offset) {
         this.container = container
         this.offset = offset
+    }
+
+    static fromRangeStart (range: Range) {
+        return new BoundaryPoint(range.startContainer, range.startOffset)
+    }
+
+    static fromRangeEnd (range: Range) {
+        return new BoundaryPoint(range.endContainer, range.endOffset)
+    }
+
+    public clone () {
+        return new BoundaryPoint(this.container, this.offset)
     }
 
     /**
@@ -136,4 +155,53 @@ export default class BoundaryPoint {
         }
     }
 
+    compare (otherBoundaryPoint: BoundaryPoint) {
+        BoundaryPoint.rangeA.setStart(this.container, this.offset)
+        BoundaryPoint.rangeB.setStart(otherBoundaryPoint.container, otherBoundaryPoint.offset)
+        return BoundaryPoint.rangeA.compareBoundaryPoints(Range.START_TO_START, BoundaryPoint.rangeB)
+    }
+
+    compareContentOnly (otherBoundaryPoint: BoundaryPoint) {
+        return -this.contentVectorTo(otherBoundaryPoint)
+    }
+
+    contentVectorTo (otherBoundaryPoint: BoundaryPoint) {
+        const range = new Range()
+
+        if (this.compare(otherBoundaryPoint) > 0) {
+            range.setEnd(this.container, this.offset)
+            range.setStart(otherBoundaryPoint.container, otherBoundaryPoint.offset)
+            return -range.toString().length
+        } else if (this.compare(otherBoundaryPoint) < 0) {
+            range.setStart(this.container, this.offset)
+            range.setEnd(otherBoundaryPoint.container, otherBoundaryPoint.offset)
+            return range.toString().length
+        } else {
+            return 0 
+        }
+    }
+
+    contentDistanceBetween (otherBoundaryPoint: BoundaryPoint) {
+        return Math.abs(this.contentVectorTo(otherBoundaryPoint))
+    }
+
+    selectNodeStart (node: Node) {
+        BoundaryPoint.rangeA.selectNode(node)
+        this.setPoint(BoundaryPoint.rangeA.startContainer, BoundaryPoint.rangeA.startOffset)
+    }
+
+    selectNodeEnd (node: Node) {
+        BoundaryPoint.rangeA.selectNode(node)
+        this.setPoint(BoundaryPoint.rangeA.endContainer, BoundaryPoint.rangeA.endOffset)
+    }
+
+    selectNodeContentsStart (node: Node) {
+        BoundaryPoint.rangeA.selectNodeContents(node)
+        this.setPoint(BoundaryPoint.rangeA.startContainer, BoundaryPoint.rangeA.startOffset)
+    }
+
+    selectNodeContentsEnd (node: Node) {
+        BoundaryPoint.rangeA.selectNodeContents(node)
+        this.setPoint(BoundaryPoint.rangeA.endContainer, BoundaryPoint.rangeA.endOffset)
+    }
 }

@@ -7,6 +7,10 @@
         },
         "outDir": "dist",
         "module": "es2015",
-        "target": "es2015"
-    }
+        "target": "es2015",
+        "moduleResolution": "node"
+    },
+    "exclude": [
+        "node_modules"
+    ]
 }
