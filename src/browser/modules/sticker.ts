@@ -1,8 +1,7 @@
 import { div, p, a, span, text } from 'base/element-creator'
 import Component from 'base/component'
-import { CaretActionContextDirection, CaretActionContextCommand, ICaretActionContext } from './editable'
-import BoundaryPoint from 'browser/base/boundary-point'
 import RangeMarker from 'browser/base/range-marker'
+import Caret from 'browser/base/caret'
 
 
 /**
@@ -14,22 +13,14 @@ import RangeMarker from 'browser/base/range-marker'
 export default class Sticker extends Component {
     static map: Map<Node, Sticker> = new Map()
 
-    private range: Range
     private element: HTMLElement
-    private leftBoundaryPoint: BoundaryPoint
-    private rightBoundaryPoint: BoundaryPoint
     private contextSubscription
     private editorContext
+    private rangeMarker: RangeMarker
 
     constructor (element: HTMLElement, editorContext) {
         super()
         this.element = element
-        this.range = new Range()
-        this.range.selectNodeContents(element)
-        this.leftBoundaryPoint = new BoundaryPoint(this.range.startContainer, this.range.startOffset)
-        this.rightBoundaryPoint = new BoundaryPoint(this.range.endContainer, this.range.endOffset)
-        this.leftBoundaryPoint.decrease(1)
-        this.rightBoundaryPoint.increase(1)
 
         Sticker.map.set(element, this)
 
@@ -40,26 +31,31 @@ export default class Sticker extends Component {
 
     }
 
-
     private initializeEvents () {
-        const globalCaretChange = this.editorContext.observables.caretChange
+        this.rangeMarker = new RangeMarker(this.element, this.editorContext.container)
+        
+        this.rangeMarker.caretInSource.subscribe(this.handleCaretIn.bind(this))
 
-        const plain = this.editorContext.observables.selectionChange.map(context => context.range) 
-        var rm = new RangeMarker(this.range, plain)
+        const deleteSource = this.editorContext.observables.deleteAction
+        deleteSource.subscribe(this.handleDelete.bind(this))
 
-        rm.caretInSource.subscribe(this.handleCaretIn.bind(this))
     }
 
 
 
-    private handleInput (context: ICaretActionContext) {
+    private handleInput () {
+
     }
 
-    private handleCaretIn (dir) {
-        console.log('caret in!')
+    private handleCaretIn ({ direction, left, right }) {
+        if (direction) {
+            Caret.collapse(right)
+        } else {
+            Caret.collapse(left)
+        }
     }
 
-    handleDelete (context: ICaretActionContext) {
-
+    handleDelete () {
+        
     }
 }

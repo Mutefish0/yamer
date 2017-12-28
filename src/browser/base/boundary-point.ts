@@ -35,15 +35,15 @@ export default class BoundaryPoint {
     }
 
     static fromRangeStart (range: Range) {
-        return new BoundaryPoint(range.startContainer, range.startOffset)
+        return  Reflect.construct(this, [range.startContainer, range.startOffset])
     }
 
     static fromRangeEnd (range: Range) {
-        return new BoundaryPoint(range.endContainer, range.endOffset)
+        return Reflect.construct(this, [range.endContainer, range.endOffset])
     }
 
     public clone () {
-        return new BoundaryPoint(this.container, this.offset)
+        return Reflect.construct(this.constructor, [this.container, this.offset])
     }
 
     /**
@@ -161,30 +161,6 @@ export default class BoundaryPoint {
         return BoundaryPoint.rangeA.compareBoundaryPoints(Range.START_TO_START, BoundaryPoint.rangeB)
     }
 
-    compareContentOnly (otherBoundaryPoint: BoundaryPoint) {
-        return -this.contentVectorTo(otherBoundaryPoint)
-    }
-
-    contentVectorTo (otherBoundaryPoint: BoundaryPoint) {
-        const range = new Range()
-
-        if (this.compare(otherBoundaryPoint) > 0) {
-            range.setEnd(this.container, this.offset)
-            range.setStart(otherBoundaryPoint.container, otherBoundaryPoint.offset)
-            return -range.toString().length
-        } else if (this.compare(otherBoundaryPoint) < 0) {
-            range.setStart(this.container, this.offset)
-            range.setEnd(otherBoundaryPoint.container, otherBoundaryPoint.offset)
-            return range.toString().length
-        } else {
-            return 0 
-        }
-    }
-
-    contentDistanceBetween (otherBoundaryPoint: BoundaryPoint) {
-        return Math.abs(this.contentVectorTo(otherBoundaryPoint))
-    }
-
     selectNodeStart (node: Node) {
         BoundaryPoint.rangeA.selectNode(node)
         this.setPoint(BoundaryPoint.rangeA.startContainer, BoundaryPoint.rangeA.startOffset)
@@ -203,5 +179,42 @@ export default class BoundaryPoint {
     selectNodeContentsEnd (node: Node) {
         BoundaryPoint.rangeA.selectNodeContents(node)
         this.setPoint(BoundaryPoint.rangeA.endContainer, BoundaryPoint.rangeA.endOffset)
+    }
+}
+
+/**
+ * 对元素边界不敏感的BoundaryPoint类
+ */
+export class Boundary extends BoundaryPoint {
+    public increase (count) {
+        return super.increase(count, true)
+    }
+
+    public decrease (count) {
+        return super.decrease(count, true) 
+    }
+
+    compare (otherBoundary: Boundary) {
+        return -this.vectorTo(otherBoundary)
+    }
+
+    vectorTo (otherBoundary: Boundary) {
+        const range = new Range()
+
+        if (super.compare(otherBoundary) > 0) {
+            range.setEnd(this.container, this.offset)
+            range.setStart(otherBoundary.container, otherBoundary.offset)
+            return -range.toString().length
+        } else if (super.compare(otherBoundary) < 0) {
+            range.setStart(this.container, this.offset)
+            range.setEnd(otherBoundary.container, otherBoundary.offset)
+            return range.toString().length
+        } else {
+            return 0
+        }
+    }
+
+    distance (otherBoundary: Boundary) {
+        return Math.abs(this.vectorTo(otherBoundary))
     }
 }

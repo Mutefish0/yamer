@@ -1,9 +1,7 @@
 import Component from 'base/component'
 import { div, p, a, span, text } from 'base/element-creator'
 import { CharCode } from 'base/char-code'
-import BoundaryPoint from 'browser/base/boundary-point'
 import Sticker from './sticker'
-
 import { Observable } from 'rxjs/Rx'
 
 export enum CaretActionContextDirection {
@@ -41,6 +39,7 @@ export default class Editable extends Component {
 
     constructor () {
         super()
+
         this.container = div({
             class: 'editable-core',
             contenteditable: true,
@@ -54,7 +53,9 @@ export default class Editable extends Component {
                 'lineHeight': '25px'
             }
         })
+
         this.editorContext = {
+            container: this.container,
             editor: this,
             observables: {}
         }
@@ -65,106 +66,26 @@ export default class Editable extends Component {
     }
 
     private initializeEvents () {
-        this.container.addEventListener('focus', () => this.isFocused = true)
-        this.container.addEventListener('blur', () => this.isFocused = false)
-
         const keydown = Observable.fromEvent(this.container, 'keydown')
-        const sel = window.getSelection()
-
-        const defaultCaretActionContext: ICaretActionContext = {
-            range: new Range(),
-            direction: CaretActionContextDirection.RTL,
-            command: CaretActionContextCommand.CaretChange,
-            event: null 
-        }
         
-        
-        const selectionChange = Observable
-        .fromEvent(document, 'selectionchange')
-        .scan((prev, curr) => {
-            const currRange = sel.getRangeAt(0)
-            let comparation = currRange.compareBoundaryPoints(Range.END_TO_END, prev.range)
-            if (comparation == 0) {
-                comparation = currRange.compareBoundaryPoints(Range.START_TO_START, prev.range)   
-            }
-            return {
-                range: currRange,
-                direction: comparation > 0 ? CaretActionContextDirection.LTR : CaretActionContextDirection.RTL
-            }
-        }, { range: new Range(), direction: CaretActionContextDirection.LTR })
-        .filter(() => {
-            if (this.isFocused) { 
-                if (this.caretChangeBuffer > 0) {
-                    this.caretChangeBuffer--
-                    return false
-                } else {
-                    return true
-                }
-            } else {
-                return false 
-            }
-        })
-        .map(simpleCaretAction => Object.assign({}, simpleCaretAction, {
-            command: CaretActionContextCommand.CaretChange,
-            event: null
-        }))
 
-        // const deleteAction = keydown
-        // .filter(e => e.keyCode == CharCode.BackSpace)
-        // .map(e => {
-        //     let currRange = sel.getRangeAt(0)
-        //     return {
-        //         range: currRange,
-        //         direction: CaretActionContextDirection.RTL,
-        //         command: CaretActionContextCommand.Delete,
-        //         event: e 
-        //     }
-        // })
+        const deleteAction = keydown
+        .filter(e => e.keyCode == CharCode.BackSpace)
 
         const tabAction = keydown
         .filter(e => e.keyCode == CharCode.Tab)
-        .map(e => {
-            let currRange = sel.getRangeAt(0)
-            return {
-                range: currRange,
-                direction: CaretActionContextDirection.RTL,
-                command: CaretActionContextCommand.Delete,
-                event: e 
-            }
-        })
 
-        // const returnAction = keydown
-        // .filter(e => e.keyCode == CharCode.CarriageReturn)
-        // .map(e => {
-        //     let currRange = sel.getRangeAt(0)
-        //     return {
-        //         range: currRange,
-        //         direction: CaretActionContextDirection.RTL,
-        //         command: CaretActionContextCommand.Delete,
-        //         event: e 
-        //     }
-        // })
+        const returnAction = keydown
+        .filter(e => e.keyCode == CharCode.CarriageReturn)
 
-        this.editorContext.observables = { /*tabAction, deleteAction, returnAction, */selectionChange }
+        this.editorContext.observables = { tabAction, deleteAction, returnAction }
 
         tabAction.subscribe(this.handleTab.bind(this))     
     }
 
-    public setSelection (range: Range) {
-        const selection = window.getSelection()
-
-        this.caretChangeBuffer += 2
-        selection.removeAllRanges()
-        selection.addRange(range)
-    }
-
-    handleTab (context) {
-        // if (e.keyCode == CharCode.Tab) {
-        //     this.infer()
-        //     e.preventDefault();
-        // }
+    handleTab (e) {
         this.infer()
-        context.event.preventDefault()
+        e.preventDefault()
     }
 
     infer () {
@@ -193,7 +114,6 @@ export default class Editable extends Component {
             sticker.mount(range) 
         } else {
             range.collapse(false)
-            
         }
 
         range.collapse(false)
