@@ -5,8 +5,6 @@
 
 import { Observable } from 'rxjs/Rx'
 import BoundaryPoint from 'browser/base/boundary-point';
-import { observeOn } from 'rxjs/operators/observeOn';
-import { inspect } from 'util';
 
 enum StartCaretPosition {
     Inside = 1,
@@ -65,7 +63,11 @@ export enum RangeMarkerCaretPosition {
     AdjacentRight_And_AdjacentRight = StartCaretPosition.AdjacentRight | EndCaretPosition.AdjacentRight
 }
 
-
+/**
+ * 按位条件同时满足
+ * @param target 
+ * @param conditions 
+ */
 function every (target, ...conditions) {
     let finalCondition = 0 
     for (let i = 0; i < conditions.length; i++) {
@@ -84,6 +86,11 @@ function every (target, ...conditions) {
     return !((target ^ finalCondition) & finalCondition)
 }
 
+/**
+ * 按位条件至少有一个满足
+ * @param target 
+ * @param conditions 
+ */
 function some (target, ...conditions) {
     let finalCondition = 0
     for (let i = 0; i < conditions.length; i++) {
@@ -108,6 +115,18 @@ function not (condition) {
     }
 }
 
+function and (...conditions) {
+    return function (target) {
+        return every(target, ...conditions)
+    }
+}
+
+function or (...conditions) {
+    return function (target) {
+        return some(target, ...conditions)
+    }
+}
+
 export default class RangeMarker {
     private currentPosition: RangeMarkerCaretPosition
     private previousPosition: RangeMarkerCaretPosition
@@ -129,11 +148,12 @@ export default class RangeMarker {
         this.leftBoundaryPoint = BoundaryPoint.fromRangeStart(range)
         this.rightBoundaryPoint = BoundaryPoint.fromRangeEnd(range)
 
-        this.buildObservables()
+        this.buildSources()
+        this.subscribeSources()
     }
 
-    private buildObservables () { 
-        this.diffSource = this.caretObservable.filter(range => {
+    private buildSources () { 
+        const positionChangeSource = this.caretObservable.map(range => {
             const startBoundaryPoint = BoundaryPoint.fromRangeStart(range)
             const endBoundaryPoint = BoundaryPoint.fromRangeEnd(range)
 
@@ -172,33 +192,42 @@ export default class RangeMarker {
                 endCaretPos = EndCaretPosition.Inside
             }
             
-            this.previousPosition = this.currentPosition
-            this.currentPosition = startCaretPos | endCaretPos | caretStatus
-
-            return (this.previousPosition & CaretStatus.Ignore) != (this.currentPosition & CaretStatus.Ignore)
+            return startCaretPos | endCaretPos | caretStatus
         })
 
+        const trackSource = positionChangeSource.scan(
+            (prev, curr) =>  ({ previous: prev.current, current: curr }), 
+            { 
+                previous: RangeMarkerCaretPosition.AdjacentRight_And_AdjacentRight, 
+                current: RangeMarkerCaretPosition.AdjacentRight_And_AdjacentRight
+            }
+        )
 
-
-        this.caretInSource = this.diffSource.filter(() => {
-            return every(this.previousPosition, CaretStatus.Collapsed)
-            && !every(this.previousPosition, StartCaretPosition.Inside) 
-            &&  every(this.currentPosition, CaretStatus.Collapsed, StartCaretPosition.Inside)
+        this.diffSource = trackSource.filter(({ previous, current })=> {
+            return (previous & CaretStatus.Ignore) != (current & CaretStatus.Ignore)
         })
 
+        this.caretInSource = this.diffSource.filter(({ previous, current }) => {
+            return every(previous, CaretStatus.Collapsed, not(StartCaretPosition.Inside))
+                && every(current, CaretStatus.Collapsed, StartCaretPosition.Inside)
+        }).map(({ previous, current }) => 
+            some(previous, StartCaretPosition.AdjacentLeft, StartCaretPosition.SeparateLeft) ? 'fromLeft' : 'fromRight'
+        )
 
-        this.caretOutSource = this.diffSource.filter(() => {
-            return every(this.previousPosition, CaretStatus.Collapsed, StartCaretPosition.Inside) 
-            && every(this.currentPosition, CaretStatus.Collapsed, not(StartCaretPosition.Inside))
-        })
+        this.caretOutSource = this.diffSource.filter(({ previous, current }) => {
+            return every(previous, CaretStatus.Collapsed, StartCaretPosition.Inside) 
+                && every(current, CaretStatus.Collapsed, not(StartCaretPosition.Inside))
+        }).map(({ previous, current }) =>
+            some(current, StartCaretPosition.AdjacentLeft, StartCaretPosition.SeparateLeft) ? 'toLeft' : 'toRight'
+        )
+    }
 
-        this.caretOutSource.subscribe(() => {
-            console.log('caret out!')
-        })
+    private subscribeSources () {
+        this.diffSource.subscribe(this.updatePosition.bind(this))
+    }
 
-        this.caretInSource.subscribe(() => {
-            console.log('caret in!')
-        })
-
+    private updatePosition ({ previous, current }) {
+        this.previousPosition = previous
+        this.currentPosition = current
     }
 }

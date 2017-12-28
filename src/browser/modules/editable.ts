@@ -1,9 +1,7 @@
 import Component from 'base/component'
 import { div, p, a, span, text } from 'base/element-creator'
 import { CharCode } from 'base/char-code'
-import Rangy from 'browser/base/rangy'
 import BoundaryPoint from 'browser/base/boundary-point'
-import ContentRange from 'browser/base/content-range'
 import Sticker from './sticker'
 
 import { Observable } from 'rxjs/Rx'
@@ -21,7 +19,7 @@ export enum CaretActionContextCommand {
 }
 
 export interface ICaretActionContext {
-    range: Range
+    range: Range 
     direction: CaretActionContextDirection,
     command: CaretActionContextCommand,
     event: Event
