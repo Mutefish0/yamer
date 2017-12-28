@@ -1,6 +1,6 @@
 import { div, p, a, span, text } from 'base/element-creator'
 import Component from 'base/component'
-import RangeMarker from 'browser/base/range-marker'
+import RangeMarker, { MarkerSource } from 'browser/base/range-marker'
 import Caret from 'browser/base/caret'
 
 
@@ -34,7 +34,7 @@ export default class Sticker extends Component {
     private initializeEvents () {
         this.rangeMarker = new RangeMarker(this.element, this.editorContext.container)
         
-        this.rangeMarker.caretInSource.subscribe(this.handleCaretIn.bind(this))
+        this.rangeMarker.subscribe(MarkerSource.CaretIn, this.handleCaretIn.bind(this))
 
         const deleteSource = this.editorContext.observables.deleteAction
         deleteSource.subscribe(this.handleDelete.bind(this))
@@ -42,20 +42,23 @@ export default class Sticker extends Component {
     }
 
 
-
     private handleInput () {
 
     }
 
-    private handleCaretIn ({ direction, left, right }) {
+    private handleCaretIn ({ direction }) {
         if (direction) {
-            Caret.collapse(right)
+            Caret.collapse(this.rangeMarker.rightBoundary)
         } else {
-            Caret.collapse(left)
+            Caret.collapse(this.rangeMarker.leftBoundary)
         }
     }
 
     handleDelete () {
         
+    }
+
+    private dispose () {
+        this.rangeMarker.dispose()
     }
 }

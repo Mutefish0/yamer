@@ -3,7 +3,7 @@
  *  这里的提供的方法只对文本敏感，对元素边界不敏感
  */
 
-import { Observable } from 'rxjs/Rx'
+import { Observable, Subscription } from 'rxjs/Rx'
 import { Boundary } from 'browser/base/boundary-point';
 
 /**
@@ -156,18 +156,25 @@ const OP_FULL_SELECTED = or(OP_JUST_SELECTED, OP_SEPARATE_SURROUND,
 // Range的部分内容被选中
 const OP_PARTIAL_SELECTED = and(CaretStatus.Selected, or(StartCaretPosition.Inside, EndCaretPosition.Inside))
 
+
+export enum MarkerSource {
+    CaretIn = 0,
+    CaretOut
+}
+
 export default class RangeMarker {
     private currentPosition: MarkerCaretPosition
     private previousPosition: MarkerCaretPosition
     private range: Range 
     private rootRange: Range
-    private leftBoundary: Boundary
-    private rightBoundary: Boundary
+
+    public leftBoundary: Boundary
+    public rightBoundary: Boundary
 
     private diffSource: Observable<{ previous: MarkerCaretPosition, current: MarkerCaretPosition }>
-
-    public caretInSource: Observable<{direction: number, left: Boundary, right: Boundary}>
-    public caretOutSource: Observable<{ direction: number, left: Boundary, right: Boundary }>
+    
+    private sourceList: Observable<any>[] 
+    private subscriptionList: Subscription[]
     // states
     public isLeftAdjacent: boolean
     public isRightAdjacent: boolean
@@ -255,23 +262,21 @@ export default class RangeMarker {
         })
 
 
-        this.caretInSource = this.diffSource.filter(({ previous, current }) => {
+        const caretInSource = this.diffSource.filter(({ previous, current }) => {
             return every(previous, CaretStatus.Collapsed, not(StartCaretPosition.Inside))
                 && every(current, CaretStatus.Collapsed, StartCaretPosition.Inside)
         }).map(({ previous, current }) => ({
-            left: this.leftBoundary,
-            right: this.rightBoundary,
             direction: some(previous, StartCaretPosition.AdjacentLeft, StartCaretPosition.SeparateLeft) ? 1 : -1
         }))
 
-        this.caretOutSource = this.diffSource.filter(({ previous, current }) => {
+        const caretOutSource = this.diffSource.filter(({ previous, current }) => {
             return every(previous, CaretStatus.Collapsed, StartCaretPosition.Inside) 
                 && every(current, CaretStatus.Collapsed, not(StartCaretPosition.Inside))
         }).map(({ previous, current }) => ({
-            left: this.leftBoundary,
-            right: this.rightBoundary,
             direction: some(current, StartCaretPosition.AdjacentLeft, StartCaretPosition.SeparateLeft) ? -1 : 1
         }))
+
+        this.sourceList = [caretInSource, caretOutSource]
     }
 
     private subscribeSources () {
@@ -289,4 +294,17 @@ export default class RangeMarker {
         this.isPartialSelected = OP_PARTIAL_SELECTED(current)
     }
 
+    public subscribe (source: MarkerSource, subscriber: (any) => any) {
+        const subscription = this.sourceList[source].subscribe(subscriber)
+        this.subscriptionList.push(subscription)
+        return subscription
+    }
+
+    public dispose () {
+        this.subscriptionList.forEach(subscription => {
+            if (!subscription.closed) {
+                subscription.unsubscribe()
+            }
+        })
+    }
 }
