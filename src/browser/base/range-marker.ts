@@ -17,7 +17,7 @@ import { Boundary } from 'browser/base/boundary-point';
  * @param target 
  * @param conditions 
  */
-function every (target, ...conditions) {
+export function every (target, ...conditions) {
     let finalCondition = 0
     for (let i = 0; i < conditions.length; i++) {
         let condition = conditions[i]
@@ -35,12 +35,14 @@ function every (target, ...conditions) {
     return !((target ^ finalCondition) & finalCondition)
 }
 
+export const has  = every
+
 /**
  * 按位条件至少有一个满足
  * @param target 
  * @param conditions 
  */
-function some (target, ...conditions) {
+export function some (target, ...conditions) {
     let finalCondition = 0
     for (let i = 0; i < conditions.length; i++) {
         let condition = conditions[i]
@@ -58,25 +60,25 @@ function some (target, ...conditions) {
     return !!(~(target ^ finalCondition) & finalCondition)
 }
 
-function not (condition) {
+export function not (condition) {
     return function (target) {
         return !every(target, condition)
     }
 }
 
-function and (...conditions) {
+export function and (...conditions) {
     return function (target) {
         return every(target, ...conditions)
     }
 }
 
-function or (...conditions) {
+export function or (...conditions) {
     return function (target) {
         return some(target, ...conditions)
     }
 }
 
-enum StartCaretPosition {
+export enum StartCaretPosition {
     Inside = 1,
     AdjacentLeft = 1 << 2,
     AdjacentRight = 1 << 3,
@@ -85,19 +87,33 @@ enum StartCaretPosition {
 }
 
 
-enum EndCaretPosition {
-    Inside = 1 << 8,
-    AdjacentLeft = 1 << 9,
-    AdjacentRight = 1 << 10,
-    SeparateLeft = 1 << 11,
-    SeparateRight = 1 << 12
+export enum EndCaretPosition {
+    Inside = 1 << 6,
+    AdjacentLeft = 1 << 7,
+    AdjacentRight = 1 << 8,
+    SeparateLeft = 1 << 9,
+    SeparateRight = 1 << 10
 }
 
-enum CaretStatus {
-    Collapsed = 1 << 13,
-    Selected = 1 << 14,
+export enum CaretStatus {
+    Collapsed = 1 << 11,
+    Selected = 1 << 12,
     Unknown = 0x00,
     Ignore = ~(CaretStatus.Collapsed | CaretStatus.Selected)
+}
+
+// 指定哪一边是活动的，即(Selection::focusNode, Selection::focusOffset)
+export enum CaretActive {
+    Start = 1 << 13,
+    End = 1 << 14
+}
+
+export const ActiveCaretPosition = {
+    Inside: or(and(StartCaretPosition.Inside, CaretActive.Start), and(EndCaretPosition.Inside, CaretActive.End)),
+    AdjacentLeft: or(and(StartCaretPosition.AdjacentLeft, CaretActive.Start), and(EndCaretPosition.AdjacentLeft, CaretActive.End)),
+    AdjacentRight: or(and(StartCaretPosition.AdjacentRight, CaretActive.Start), and(EndCaretPosition.AdjacentRight, CaretActive.End)),
+    SeparateLeft: or(and(StartCaretPosition.SeparateLeft, CaretActive.Start), and(EndCaretPosition.SeparateLeft, CaretActive.End)),
+    SeparateRight: or(and(StartCaretPosition.SeparateRight, CaretActive.Start), and(EndCaretPosition.SeparateRight, CaretActive.End))
 }
 
 // 开始和结束光标分别分离在Range左右侧
@@ -159,12 +175,14 @@ const OP_PARTIAL_SELECTED = and(CaretStatus.Selected, or(StartCaretPosition.Insi
 
 export enum MarkerSource {
     CaretIn = 0,
-    CaretOut
+    CaretOut,
+    CaretAdjacentLeft,
+    CaretAdjacentRight 
 }
 
 export default class RangeMarker {
-    private currentPosition: MarkerCaretPosition
-    private previousPosition: MarkerCaretPosition
+    private currentPosition: MarkerCaretPosition = MarkerCaretPosition.AdjacentRight_And_AdjacentRight
+    private previousPosition: MarkerCaretPosition = MarkerCaretPosition.AdjacentRight_And_AdjacentRight
     private range: Range 
     private rootRange: Range
 
@@ -174,7 +192,7 @@ export default class RangeMarker {
     private diffSource: Observable<{ previous: MarkerCaretPosition, current: MarkerCaretPosition }>
     
     private sourceList: Observable<any>[] 
-    private subscriptionList: Subscription[]
+    private subscriptionList: Subscription[] = []
     // states
     public isLeftAdjacent: boolean
     public isRightAdjacent: boolean
@@ -182,13 +200,19 @@ export default class RangeMarker {
     public isPartialSelected: boolean
     public isJustSelected: boolean
 
-    constructor (markerElement: HTMLElement, rootElement: HTMLElement) {
-        this.range = new Range()
+    constructor (markerElementRange: HTMLElement | Range, rootElement: HTMLElement) {
+        this.range
         this.rootRange = new Range()
         this.previousPosition = MarkerCaretPosition.AdjacentRight_And_AdjacentRight
         this.currentPosition = MarkerCaretPosition.AdjacentRight_And_AdjacentRight
         
-        this.range.selectNode(markerElement)
+        if (markerElementRange instanceof Range) {
+            this.range = markerElementRange
+        } else {
+            this.range = new Range()
+            this.range.selectNode(markerElementRange) 
+        }
+
         this.leftBoundary = Boundary.fromRangeStart(this.range)
         this.rightBoundary = Boundary.fromRangeEnd(this.range)
         this.rootRange.selectNode(rootElement)
@@ -200,68 +224,31 @@ export default class RangeMarker {
     private buildSources () { 
         const selection = document.getSelection()
         const documentChangeSource = Observable.fromEvent(document, 'selectionchange')
-        const restrictedChangeSource = documentChangeSource
+        // ensure `selection` has at least one range
+        const ensureChangeSource = documentChangeSource
             .filter(() => selection.rangeCount > 0)
-            .map(() => selection.getRangeAt(0))
-            .filter(range => (
+            .map(() => ({ range: selection.getRangeAt(0), selection }))
+        // filter caret change event outside `rootRange`
+        const restrictedChangeSource = ensureChangeSource
+            .filter(({ range }) => (
                 this.rootRange.compareBoundaryPoints(Range.START_TO_START, range) <= 0 
                 && this.rootRange.compareBoundaryPoints(Range.END_TO_END, range) >= 0
             ))
-        const positionChangeSource = restrictedChangeSource.map(range => {
-            const startBoundary = Boundary.fromRangeStart(range)
-            const endBoundary = Boundary.fromRangeEnd(range)
-
-            const caretStatus = startBoundary.compare(endBoundary) == 0 
-            ? CaretStatus.Collapsed : CaretStatus.Selected
-
-            const startLeftCmp = startBoundary.compare(this.leftBoundary)
-            const startRightCmp = startBoundary.compare(this.rightBoundary) 
-            const endLeftCmp = endBoundary.compare(this.leftBoundary)
-            const endRightCmp = endBoundary.compare(this.rightBoundary)
-
-            let startCaretPos
-            let endCaretPos
-
-            if (startLeftCmp < 0) {
-                startCaretPos = StartCaretPosition.SeparateLeft
-            } else if (startRightCmp > 0) {
-                startCaretPos = StartCaretPosition.SeparateRight
-            } else if (startLeftCmp == 0) {
-                startCaretPos = StartCaretPosition.AdjacentLeft
-            } else if (startRightCmp == 0) {
-                startCaretPos = StartCaretPosition.AdjacentRight
-            } else if (startLeftCmp > 0 && startRightCmp < 0) {
-                startCaretPos = StartCaretPosition.Inside 
-            }
-
-            if (endLeftCmp < 0) {
-                endCaretPos = EndCaretPosition.SeparateLeft
-            } else if (endRightCmp > 0) {
-                endCaretPos = EndCaretPosition.SeparateRight
-            } else if (endLeftCmp == 0) {
-                endCaretPos = EndCaretPosition.AdjacentLeft
-            } else if (endRightCmp == 0) {
-                endCaretPos = EndCaretPosition.AdjacentRight
-            } else if (endLeftCmp > 0 && endRightCmp < 0) {
-                endCaretPos = EndCaretPosition.Inside
-            }
-            
-            return startCaretPos | endCaretPos | caretStatus
-        })
-
-        const trackSource = positionChangeSource.scan(
-            (prev, curr) =>  ({ previous: prev.current, current: curr }), 
-            { 
-                previous: MarkerCaretPosition.AdjacentRight_And_AdjacentRight, 
-                current: MarkerCaretPosition.AdjacentRight_And_AdjacentRight
-            }
+        // map `range` to MarkerCaretPosition
+        this.mapRangeToMarkerCaretPosition = this.mapRangeToMarkerCaretPosition.bind(this)
+        const positionChangeSource = restrictedChangeSource.map(this.mapRangeToMarkerCaretPosition)
+        // track previous position
+        const trackSource = positionChangeSource.scan((prev, curr) => 
+            ({ previous: prev.current, current: curr }), 
+            { previous: this.previousPosition, current: this.currentPosition }
         )
 
+        // filter caret change events insensitive to `this.range`
         this.diffSource = trackSource.filter(({ previous, current })=> {
             return (previous & CaretStatus.Ignore) != (current & CaretStatus.Ignore)
         })
 
-
+        // builtin useful caret events
         const caretInSource = this.diffSource.filter(({ previous, current }) => {
             return every(previous, CaretStatus.Collapsed, not(StartCaretPosition.Inside))
                 && every(current, CaretStatus.Collapsed, StartCaretPosition.Inside)
@@ -276,7 +263,66 @@ export default class RangeMarker {
             direction: some(current, StartCaretPosition.AdjacentLeft, StartCaretPosition.SeparateLeft) ? -1 : 1
         }))
 
-        this.sourceList = [caretInSource, caretOutSource]
+        const caretAdjacentLeftSource = this.diffSource.filter(({ previous, current }) => 
+            every(previous, not(OP_ADJACENT_LEFT))
+            && every(current, OP_ADJACENT_LEFT))
+            .map(({ previous, current }) => ({
+                direction: every(previous, ActiveCaretPosition.SeparateLeft) ? 1 : -1
+            }))
+        const caretAdjacentRightSource = this.diffSource.filter(({ previous, current }) =>
+            every(previous, OP_ADJACENT_LEFT)
+            && every(current, OP_ADJACENT_RIGHT))
+            .map(({ previous, current }) => ({
+                direction: every(previous, ActiveCaretPosition.SeparateRight) ? -1 : 1
+            }))
+
+        this.sourceList = [caretInSource, caretOutSource, caretAdjacentLeftSource, caretAdjacentRightSource]
+    }
+
+    private mapRangeToMarkerCaretPosition ({ range, selection }) {
+        const startBoundary = Boundary.fromRangeStart(range)
+        const endBoundary = Boundary.fromRangeEnd(range)
+
+        const caretStatus = startBoundary.compare(endBoundary) == 0
+            ? CaretStatus.Collapsed : CaretStatus.Selected
+
+        const caretActive =
+            (startBoundary.container == selection.focusNode && startBoundary.offset == selection.focusOffset) ?
+                CaretActive.Start : CaretActive.End
+
+        const startLeftCmp = startBoundary.compare(this.leftBoundary)
+        const startRightCmp = startBoundary.compare(this.rightBoundary)
+        const endLeftCmp = endBoundary.compare(this.leftBoundary)
+        const endRightCmp = endBoundary.compare(this.rightBoundary)
+
+        let startCaretPos
+        let endCaretPos
+
+        if (startLeftCmp < 0) {
+            startCaretPos = StartCaretPosition.SeparateLeft
+        } else if (startRightCmp > 0) {
+            startCaretPos = StartCaretPosition.SeparateRight
+        } else if (startLeftCmp == 0) {
+            startCaretPos = StartCaretPosition.AdjacentLeft
+        } else if (startRightCmp == 0) {
+            startCaretPos = StartCaretPosition.AdjacentRight
+        } else if (startLeftCmp > 0 && startRightCmp < 0) {
+            startCaretPos = StartCaretPosition.Inside
+        }
+
+        if (endLeftCmp < 0) {
+            endCaretPos = EndCaretPosition.SeparateLeft
+        } else if (endRightCmp > 0) {
+            endCaretPos = EndCaretPosition.SeparateRight
+        } else if (endLeftCmp == 0) {
+            endCaretPos = EndCaretPosition.AdjacentLeft
+        } else if (endRightCmp == 0) {
+            endCaretPos = EndCaretPosition.AdjacentRight
+        } else if (endLeftCmp > 0 && endRightCmp < 0) {
+            endCaretPos = EndCaretPosition.Inside
+        }
+
+        return startCaretPos | endCaretPos | caretActive | caretStatus
     }
 
     private subscribeSources () {

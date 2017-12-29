@@ -1,5 +1,5 @@
 import Component from 'base/component'
-import { div, p, a, span, text } from 'base/element-creator'
+import { div, p, a, span, text, input } from 'base/element-creator'
 import { CharCode } from 'base/char-code'
 import Sticker from './sticker'
 import { Observable } from 'rxjs/Rx'
@@ -41,6 +41,7 @@ export default class Editable extends Component {
         super()
 
         this.container = div({
+            textContent: '\u001A',
             class: 'editable-core',
             contenteditable: true,
             style:  {
@@ -55,7 +56,7 @@ export default class Editable extends Component {
         })
 
         this.editorContext = {
-            container: this.container,
+            container: this.container, 
             editor: this,
             observables: {}
         }
@@ -106,7 +107,8 @@ export default class Editable extends Component {
                 textContent: '加粗',
                 style: {
                     backgroundColor: 'rgba(90,120,75,0.5)'
-                }
+                },
+                contenteditable: false
             })
 
             const sticker = new Sticker(solidSpan, this.editorContext)

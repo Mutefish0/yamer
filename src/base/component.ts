@@ -14,29 +14,40 @@ export default abstract class Component{
         if (!this.hasSettledElement) {
             console.warn(`component \`${this.constructor.name}\` is has no settled element.`)
         }
-
-        let mountFunc = null        
+     
         if (node instanceof Node) {
-            mountFunc = node.appendChild
+            for (let i = 0; i < this.componentRootNodes.length; i++) {
+                node.appendChild(this.componentRootNodes[i])
+            } 
         } else if (node instanceof Range) {
-            mountFunc = node.insertNode
-        } else {
-            mountFunc = () => {}
-        }
-
-        this.componentRootNodes.forEach(root => {
-            if (root) {
-                mountFunc.call(node, root)
+            for (let i = this.componentRootNodes.length; i-- >0;) {
+                node.insertNode(this.componentRootNodes[i])
             }
-        });
+        } 
 
         this.parentNode = this.componentRootNodes[0].parentNode
+
+        this.didMounted()
     }
 
     public unmount () {
+        this.willUnmount()
         this.componentRootNodes.forEach(root => {
             this.parentNode.removeChild(root)
         })
+        this.didUnmounted()
+    }
+
+    protected didMounted () {
+
+    }
+
+    protected willUnmount () {
+
+    } 
+
+    protected didUnmounted () {
+
     }
 }
 

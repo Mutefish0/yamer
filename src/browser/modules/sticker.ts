@@ -3,62 +3,53 @@ import Component from 'base/component'
 import RangeMarker, { MarkerSource } from 'browser/base/range-marker'
 import Caret from 'browser/base/caret'
 
+export default class Sticker extends Component { 
+    private editorContext 
+    private rightGutter: HTMLElement
+    private panel
 
-/**
- * 由一串字符组成的一个整体
- * 光标只能在其两侧，而不能在内部
- * 其中内容可以被选中
- * 删除操作会删除整体
- */
-export default class Sticker extends Component {
-    static map: Map<Node, Sticker> = new Map()
+    private rightMarker: RangeMarker
 
-    private element: HTMLElement
-    private contextSubscription
-    private editorContext
-    private rangeMarker: RangeMarker
+    private pannelMarker: RangeMarker
 
-    constructor (element: HTMLElement, editorContext) {
+    constructor(arg1, editorContext) {
         super()
-        this.element = element
-
-        Sticker.map.set(element, this)
-
         this.editorContext = editorContext
-        this.setElement(element) 
 
-        this.initializeEvents()
+        this.panel = span({ 
+            contentEditable: false, 
+            style: { 
+                color: 'indianred',
+                fontWeight: 'bold'
+            }
+        })
 
+        this.rightGutter = span({ textContent: '\u001A', contentEditable: true }) 
+        this.panel.appendChild(text('hello'))
+        this.panel.appendChild(this.rightGutter)
+
+        this.setElement([this.panel, this.rightGutter])
     }
 
-    private initializeEvents () {
-        this.rangeMarker = new RangeMarker(this.element, this.editorContext.container)
-        
-        this.rangeMarker.subscribe(MarkerSource.CaretIn, this.handleCaretIn.bind(this))
+    didMounted () {
+        const rightGutterRange = new Range()
 
-        const deleteSource = this.editorContext.observables.deleteAction
-        deleteSource.subscribe(this.handleDelete.bind(this))
+        rightGutterRange.selectNodeContents(this.rightGutter.firstChild)
 
+        this.rightMarker = new RangeMarker(rightGutterRange, this.editorContext.container)
+        this.pannelMarker = new RangeMarker(this.panel, this.editorContext.container)
+
+        this.subscribeSources()
     }
 
+    private subscribeSources () {
+        this.rightMarker.subscribe(MarkerSource.CaretAdjacentLeft, ({ direction }) => {
+            if (direction > 0) {
+                Caret.collapse(this.rightMarker.rightBoundary)
+            } else {
+                Caret.collapse(this.pannelMarker.leftBoundary)
+            }
+        })
+    } 
 
-    private handleInput () {
-
-    }
-
-    private handleCaretIn ({ direction }) {
-        if (direction) {
-            Caret.collapse(this.rangeMarker.rightBoundary)
-        } else {
-            Caret.collapse(this.rangeMarker.leftBoundary)
-        }
-    }
-
-    handleDelete () {
-        
-    }
-
-    private dispose () {
-        this.rangeMarker.dispose()
-    }
-}
+} 

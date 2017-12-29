@@ -6,21 +6,17 @@ import { Boundary } from 'browser/base/boundary-point'
  */
 
 export default class Caret {
-    static selection: Selection
+    static selection: Selection = window.getSelection()
 
-    static verifySelection () {
-        if (typeof Caret.selection == 'undefined') {
-            Caret.selection = document.getSelection()
+    static getRange (): Range {
+        if (Caret.selection.rangeCount > 0) {
+            return Caret.selection.getRangeAt(0)
+        } else {
+            return null 
         }
     }
 
-    static getRange (): Range {
-        Caret.verifySelection()
-        return Caret.selection.getRangeAt(0)
-    }
-
     static setRange (range: Range) {
-        Caret.verifySelection()
         Caret.selection.removeAllRanges()
         Caret.selection.addRange(range)
     }
