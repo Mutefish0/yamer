@@ -1,5 +1,4 @@
 import { CharCode } from 'base/char-code'
-import MarkdownParser from 'base/markdown-parser'
 import { div, span } from 'base/element-creator'
 import Component from 'base/component'
 import Editable from 'browser/modules/editable'
@@ -7,7 +6,9 @@ import Editable from 'browser/modules/editable'
 class Editor extends Component {
     constructor () {
         super()
-        let container = div()
+        let container = div({
+            class: 'markdown editor'
+        })
         let editArea = div()
         let previewArea = div()
         

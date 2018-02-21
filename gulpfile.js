@@ -1,8 +1,11 @@
-let gulp = require('gulp')
-let exec = require('child_process').exec
-let spawn = require('child_process').spawn
+const gulp = require('gulp')
+const exec = require('child_process').exec
+const spawn = require('child_process').spawn
+const livereload = require('livereload')
+const sass = require('gulp-sass')
+const concat = require('gulp-concat')
 
-let electron = require('electron')
+const electron = require('electron')
 
 gulp.task('rollup-watch', cb => {
     let child = exec('rollup -c -w', err => { 
@@ -13,21 +16,6 @@ gulp.task('rollup-watch', cb => {
             cb()
         }
     })
-    child.stderr.on('data', data => {
-        if (data.indexOf('created') == 0) {
-            gulp.start('electron-reload')
-        }    
-    })
-})
-
-
-let electron_process
-gulp.task('electron-reload', cb => {
-    // 通过stdout向electron发送刷新页面的消息
-    if (electron_process) {
-        electron_process.stdout.write(JSON.stringify({ command: 'reload' }))
-    }
-    cb()
 })
 
 gulp.task('electron', cb => {
@@ -35,10 +23,8 @@ gulp.task('electron', cb => {
     child.on('close', code => {
         process.exit(code) 
     })
-    electron_process = child
     cb()
 })
-
 
 function rollupTest () {
     return new Promise((resolve, reject) => {
@@ -73,4 +59,20 @@ gulp.task('browser-test', cb => {
     })
 })
 
-gulp.task('default', ['electron', 'rollup-watch'])
+gulp.task('sass', () => {
+    gulp.src('src/**/*.scss')
+    .pipe(sass().on('error', sass.logError))
+    .pipe(concat('style.css'))
+    .pipe(gulp.dest('dist/'))
+})
+
+gulp.task('watch:sass', () => {
+    gulp.watch('src/**/*.scss', ['sass'])
+})
+
+gulp.task('livereload', () => {
+    const server = livereload.createServer({ port: 7001 })
+    server.watch(__dirname + '/dist/')
+})
+
+gulp.task('default', ['electron', 'livereload', 'rollup-watch', 'watch:sass'])

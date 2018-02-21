@@ -1,0 +1,36 @@
+[
+    {
+        "type": "heading",
+        "level": 1,
+        "content": "foo1"
+    },
+    {
+        "type": "heading",
+        "level": 2,
+        "content": "foo2"
+    },
+    {
+        "type": "heading",
+        "level": 3,
+        "content": "foo3"
+    },
+    {
+        "type": "heading",
+        "level": 4,
+        "content": "foo4"
+    },
+    {
+        "type": "heading",
+        "level": 5,
+        "content": "foo5"
+    },
+    {
+        "type": "heading",
+        "level": 6,
+        "content": "foo6"
+    },
+    {
+        "type": "paragraph",
+        "content": "####### foo7"
+    }
+]

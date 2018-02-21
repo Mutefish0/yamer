@@ -49,9 +49,3 @@ app.dock.hide()
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
-
-process.stdout.on('data', function (data) {
-    if (data == 'reload') {
-        mainWindow.loadURL(mainURL)
-    }
-})

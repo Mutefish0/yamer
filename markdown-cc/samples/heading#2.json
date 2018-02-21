@@ -1,0 +1,12 @@
+[
+    {
+        "type": "paragraph"
+    },
+    {
+        "type": "heading"
+    },
+    {
+        "type": "paragraph",
+        "content": "## foo"
+    }
+]

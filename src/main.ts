@@ -1,4 +1,4 @@
-import Editor from './editor'
+import Editor from './editor' 
 
 let appContainer = document.getElementById('app')
 

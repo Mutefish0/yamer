@@ -3,8 +3,9 @@
  *  这里的提供的方法只对文本敏感，对元素边界不敏感
  */
 
-import { Observable, Subscription } from 'rxjs/Rx'
+import { Observable, Subscription, Subject } from 'rxjs/Rx'
 import { Boundary } from 'browser/base/boundary-point';
+import { CharCode } from 'src/base/char-code'
 
 /**
  * @TODO
@@ -177,7 +178,9 @@ export enum MarkerSource {
     CaretIn = 0,
     CaretOut,
     CaretAdjacentLeft,
-    CaretAdjacentRight 
+    CaretAdjacentRight,
+
+    CaretChange
 }
 
 export default class RangeMarker {
@@ -193,12 +196,15 @@ export default class RangeMarker {
     
     private sourceList: Observable<any>[] 
     private subscriptionList: Subscription[] = []
+
+    private alive = true
     // states
     public isLeftAdjacent: boolean
     public isRightAdjacent: boolean
     public isFullSelected: boolean 
     public isPartialSelected: boolean
     public isJustSelected: boolean
+    public isInside: boolean
 
     constructor (markerElementRange: HTMLElement | Range, rootElement: HTMLElement) {
         this.range
@@ -223,17 +229,25 @@ export default class RangeMarker {
 
     private buildSources () { 
         const selection = document.getSelection()
-        const documentChangeSource = Observable.fromEvent(document, 'selectionchange')
-        // ensure `selection` has at least one range
+        
+        // Due to the bug that selectionchange event not firing after backspace, we need merge backspace event in 
+        // See https://bugs.chromium.org/p/chromium/issues/detail?id=725890
+        const backspaceSource = Observable.fromEvent(document, 'keyup').filter(e => e['keyCode'] == CharCode.BackSpace)
+        const documentChangeSource = Observable.merge(backspaceSource, Observable.fromEvent(document, 'selectionchange'))
+
+        // ensure `selection` has at least one range and the this is alive
         const ensureChangeSource = documentChangeSource
-            .filter(() => selection.rangeCount > 0)
+            .filter(() => selection.rangeCount > 0 && this.alive)
             .map(() => ({ range: selection.getRangeAt(0), selection }))
         // filter caret change event outside `rootRange`
+        let isInsideRootLast = false
         const restrictedChangeSource = ensureChangeSource
-            .filter(({ range }) => (
-                this.rootRange.compareBoundaryPoints(Range.START_TO_START, range) <= 0 
-                && this.rootRange.compareBoundaryPoints(Range.END_TO_END, range) >= 0
-            ))
+            .filter(({ range }) => {
+                const isInsideRoot = 
+                    this.rootRange.compareBoundaryPoints(Range.START_TO_START, range) <= 0 
+                    && this.rootRange.compareBoundaryPoints(Range.END_TO_END, range) >= 0
+                return [isInsideRoot || isInsideRootLast, isInsideRootLast = isInsideRoot][0]
+            })
         // map `range` to MarkerCaretPosition
         this.mapRangeToMarkerCaretPosition = this.mapRangeToMarkerCaretPosition.bind(this)
         const positionChangeSource = restrictedChangeSource.map(this.mapRangeToMarkerCaretPosition)
@@ -246,7 +260,7 @@ export default class RangeMarker {
         // filter caret change events insensitive to `this.range`
         this.diffSource = trackSource.filter(({ previous, current })=> {
             return (previous & CaretStatus.Ignore) != (current & CaretStatus.Ignore)
-        })
+        }).share()
 
         // builtin useful caret events
         const caretInSource = this.diffSource.filter(({ previous, current }) => {
@@ -276,7 +290,9 @@ export default class RangeMarker {
                 direction: every(previous, ActiveCaretPosition.SeparateRight) ? -1 : 1
             }))
 
-        this.sourceList = [caretInSource, caretOutSource, caretAdjacentLeftSource, caretAdjacentRightSource]
+        const caretChangeSource = this.diffSource
+
+        this.sourceList = [caretInSource, caretOutSource, caretAdjacentLeftSource, caretAdjacentRightSource, caretChangeSource]
     }
 
     private mapRangeToMarkerCaretPosition ({ range, selection }) {
@@ -338,6 +354,7 @@ export default class RangeMarker {
         this.isLeftAdjacent = OP_ADJACENT_LEFT(current) 
         this.isRightAdjacent = OP_ADJACENT_RIGHT(current)
         this.isPartialSelected = OP_PARTIAL_SELECTED(current)
+        this.isInside = every(current, StartCaretPosition.Inside, EndCaretPosition.Inside)
     }
 
     public subscribe (source: MarkerSource, subscriber: (any) => any) {
@@ -347,6 +364,7 @@ export default class RangeMarker {
     }
 
     public dispose () {
+        this.alive = false
         this.subscriptionList.forEach(subscription => {
             if (!subscription.closed) {
                 subscription.unsubscribe()

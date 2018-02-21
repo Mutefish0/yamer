@@ -21,6 +21,17 @@ export default class Caret {
         Caret.selection.addRange(range)
     }
 
+    static collapseToElement (el: HTMLElement | Node, toStart: boolean = false) {
+        const range = new Range()
+        range.selectNodeContents(el)
+        Caret.collapseToRange(range)
+    }
+
+    static collapseToRange (range: Range, toStart: boolean = false) {
+        const boundary = toStart ? Boundary.fromRangeStart(range) : Boundary.fromRangeEnd(range)
+        Caret.collapse(boundary)
+    }
+
     static collapse (arg: boolean | Boundary = false) {
         const range = Caret.getRange()
         if (arg instanceof Boolean) {

@@ -1,12 +1,10 @@
-export default abstract class Component{
-    private fragment: DocumentFragment
+export default abstract class Component {
     private componentRootNodes: Node[]
     private parentNode: Node
     private hasSettledElement: boolean
 
     protected setElement (nodes: Node | Node[]) {
         this.hasSettledElement = true
-        this.fragment = document.createDocumentFragment()
         this.componentRootNodes = nodes instanceof Array ? nodes : [nodes]
     }
 

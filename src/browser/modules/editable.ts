@@ -4,25 +4,7 @@ import { CharCode } from 'base/char-code'
 import Sticker from './sticker'
 import { Observable } from 'rxjs/Rx'
 
-export enum CaretActionContextDirection {
-    LTR,
-    RTL
-}
-
-export enum CaretActionContextCommand {
-    CaretChange,
-    Delete,
-    Tab,
-    Return
-}
-
-export interface ICaretActionContext {
-    range: Range 
-    direction: CaretActionContextDirection,
-    command: CaretActionContextCommand,
-    event: Event
-}
-
+import EmphasisPlaceholder from './EmphasisPlaceholder'
 
 export default class Editable extends Component {
     private container: HTMLElement
@@ -43,16 +25,7 @@ export default class Editable extends Component {
         this.container = div({
             textContent: '\u001A',
             class: 'editable-core',
-            contenteditable: true,
-            style:  {
-                'backgroundColor': 'gray',
-                'color': 'white',
-                'padding': 0,
-                'margin': 0,
-                'outline': 'none',
-                'whiteSpace': 'pre',
-                'lineHeight': '25px'
-            }
+            contenteditable: true
         })
 
         this.editorContext = {
@@ -68,7 +41,6 @@ export default class Editable extends Component {
 
     private initializeEvents () {
         const keydown = Observable.fromEvent(this.container, 'keydown')
-        
 
         const deleteAction = keydown
         .filter(e => e.keyCode == CharCode.BackSpace)
@@ -111,19 +83,16 @@ export default class Editable extends Component {
                 contenteditable: false
             })
 
-            const sticker = new Sticker(solidSpan, this.editorContext)
+            const sticker = new Sticker(new EmphasisPlaceholder(), this.editorContext)
 
             sticker.mount(range) 
         } else {
             range.collapse(false)
         }
-
-        range.collapse(false)
-        sel.removeAllRanges()
-        sel.addRange(range)
         
     }
 }
+
 
 
 enum InlineSymbol {
