@@ -5,7 +5,8 @@ var manifest = [
     'heading#1',
     'heading#2',
     'thematic-break',
-    'code-block'
+    'code-block',
+    'link-reference-definition'
 ]
 
 module.exports = manifest.map(label => {

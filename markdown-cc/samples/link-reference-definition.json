@@ -1,0 +1,34 @@
+[
+    {
+        "type": "link_reference_definition",
+        "name": "foo",
+        "url": "myexample.com",
+        "title": "my example"
+    },
+    {
+        "type": "link_reference_definition",
+        "name": "bar",
+        "url": "bar.com",
+        "title": "bar example"
+    },
+    {
+        "type": "link_reference_definition",
+        "name": "baz",
+        "url": "baz.com",
+        "title": "hello baz, hello baz\nhello baz"
+    },
+    {
+        "type": "link_reference_definition",
+        "name": "fooz",
+        "url": "fooz.com",
+        "title": null
+    },
+    {
+        "type": "paragraph",
+        "content": "[boo]: "
+    },
+    {
+        "type": "paragraph",
+        "content": "boo.com"
+    }
+]
