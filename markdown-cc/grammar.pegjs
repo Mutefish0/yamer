@@ -16,6 +16,17 @@
         })
         return plainStrArr.join(joint)
     }
+    
+    function languageAbbrTransform (language) {
+        switch (language) {
+            case 'js': 
+                return 'javascript'
+            case 'ts':
+                return 'typescript'
+            default:
+                return language
+        }
+    }
 }
 
 start = 
@@ -40,8 +51,8 @@ thematic_break =
 
 
 code_block = 
-    '```' lan:(language?) '\n' code:(pre*) '\n' '```' 
-    { return { type: 'code_block', content: code, language: lan} }
+    '```' lan:(language?) '\n' code:(code_pre*) '\n' '```' separator
+    { return { type: 'code_block', content: deepJoin(code, ''), language: lan} }
 
 paragraph = 
     value:((character+ignored_newline?)+)separator
@@ -49,14 +60,16 @@ paragraph =
 
 character = escaped_indicator / [^\n]
 
-language = 'js' / 'javascript' / 'coffescript' / 'typescript' / 'html' / 'css' / 'ruby' / 'python' / 'java'  / 'go' /  'erlang' / 'c' / 'c++' / 'c#' / 'objective-c' / 'php' / 'swift' / 'r' / 'matlab'
+language = 
+    lan:('js' / 'javascript' / 'coffescript' / 'ts' / 'typescript' / 'html' / 'css' / 'ruby' / 'python' / 'java'  / 'go' /  'erlang' / 'c' / 'c++' / 'c#' / 'objective-c' / 'php' / 'swift' / 'r' / 'matlab')
+    { return languageAbbrTransform(lan) }
 
-pre = escaped_indicator / '`'!'``'
+code_pre = '`'!'``' / '\n'!'`' / [^\n`]
 
 separator = '\n'+eof? / eof 
 
 escaped_indicator = ei:('\\#' / '\\*' / '\\-' / '\\_' / '\\~' / '\\`') { return ei[1] }
 
-ignored_newline = '\n' !leaf_block { return '' }
+ignored_newline = '\n' !(leaf_block / '\n' / eof) { return ' ' }
 
 eof = !.

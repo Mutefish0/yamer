@@ -1,5 +1,16 @@
 [
     {
-        "type": "code_block"
+        "type": "code_block",
+        "content": "print('hello world!')\nprint('hello world!')",
+        "language": null
+    },
+    {
+        "type": "code_block",
+        "content": "console.log('hello')\n// yoo\nconsole.log('world')",
+        "language": "javascript"
+    },
+    {
+        "type": "paragraph",
+        "content": "`` print('1') ```"
     }
 ]
