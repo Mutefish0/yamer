@@ -1,0 +1,84 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Markdown Compiler Playground</title>
+    <style>
+        body {
+            font-family: "PingFangSC", Menlo, Monaco, "Courier New", monospace;
+        }
+        #refresh {
+            vertical-align: middle;
+            margin-left: 12px;
+        }
+        #source, #ast {
+            font-weight: normal;
+            font-size: 14px;
+            line-height: 16px;
+            letter-spacing: 0;
+            background-color: #24282A;
+            color: #d4d4d4;
+            text-align: left;
+            border-top: 1px solid #121516;
+            padding-top: 10px;
+            padding-bottom: 10px;
+            margin: 0;
+            border-radius: 3px;
+        }
+        #ast {
+            min-height: 175px;
+        }
+        #source {
+            padding: 8px;
+            outline: none;
+            border: none;
+            width: 100%;
+        }
+        .json-pretty {
+            padding-left: 30px;
+            padding-right: 30px;
+        }
+        .json-selected {
+            background-color: rgba(139, 191, 228, 0.19999999999999996);
+        }
+
+        .json-string {
+            color: #6caedd;
+        }
+
+        .json-key {
+            color: #ec5f67;
+        }
+
+        .json-boolean {
+            color: #99c794;
+        }
+
+        .json-number {
+            color: #99c794;
+        }
+    </style>
+</head>
+<body>
+    <h1>Markdown Compiler Playground <button id="refresh">刷新</button></h1>
+    <h2>input markdown source: </h2>
+    <textarea name="" id="source" cols="30" rows="10"></textarea>
+    <h2>output ast</h2>
+    <p id="ast"></p>
+</body>
+<script>
+    var Parser = require('./compiler')
+    var prettyHtml = require('json-pretty-html').default
+    var astElement = document.querySelector('#ast')
+    var sourceElement = document.querySelector('#source')
+    var refreshButton = document.querySelector('#refresh')
+    sourceElement.addEventListener('input', function () {
+        var ast = Parser.parse(sourceElement.value)
+        astElement.innerHTML = prettyHtml(ast)
+    })
+    refreshButton.addEventListener('click', function () {
+        window.location.reload()
+    })
+</script>
+</html>

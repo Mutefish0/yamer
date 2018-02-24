@@ -14,3 +14,6 @@ hello baz"
 
 boo.com
 
+[booz]: https://你好.中国
+"URLs are not encoded"
+

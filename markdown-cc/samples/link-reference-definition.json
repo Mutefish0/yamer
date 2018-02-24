@@ -30,5 +30,11 @@
     {
         "type": "paragraph",
         "content": "boo.com"
+    },
+    {
+        "type": "link_reference_definition",
+        "name": "booz",
+        "url": "https://你好.中国",
+        "title": "URLs are not encoded"
     }
 ]
