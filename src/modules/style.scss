@@ -1,0 +1,26 @@
+.markdown-workspace {
+    .headbar {
+        background: #EEF1F3;
+    }
+    .workspace {
+        position: relative;
+        height: 400px;
+        .editor {
+            padding: 14px;
+            width: calc(100% - 240px);
+            height: 100%;
+            background: #606E7B;
+            color: #fff;
+            box-sizing: border-box;
+        }
+        .minimap {
+            position: absolute;
+            top: 0;
+            right: 0;
+            padding: 8px;
+            width: 240px;
+            height: 100%;
+            box-sizing: border-box;
+        }
+    }
+}

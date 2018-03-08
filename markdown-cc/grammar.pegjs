@@ -123,19 +123,24 @@ start =
     separator?blocks:block* { return blocks }
 
 none_paragraph_block =    
-    heading / thematic_break / code_block / link_reference_definition
+    container_block / heading / thematic_break / code_block / link_reference_definition / blank_lines
 
 block = 
-    leaf_block // / container_block 
+    container_block / leaf_block
 
 leaf_block = 
-    heading / thematic_break / code_block / link_reference_definition / paragraph
+    heading / thematic_break / code_block / link_reference_definition / blank_lines / paragraph
 
-//container_block = 
+container_block = 
+    blockquote 
+
+blank_lines = 
+    '\n'+
+    { return { type: 'blank_lines' } }
 
 heading =  
-    leading_indent indicator:('#' '#'?'#'?'#'?'#'?'#'?) ' '+value:character+separator  
-    { return { type: 'heading', level: indicator.join('').length, content: value.join('') } }
+    leading_indent indicator:('#' '#'?'#'?'#'?'#'?'#'?) ' '+value:merged_inline+ separator  
+    { return { type: 'heading', level: indicator.join('').length, children: value } }
 
 thematic_break = 
     leading_indent (('*' '*' '*' '*'*) / ('-' '-' '-' '-'*) / ('_' '_' '_' '_'*)) separator
@@ -149,16 +154,20 @@ code_block =
     '```' lan:(language?) '\n' code:(code_pre*) '\n' '```' separator
     { return { type: 'code_block', content: deepJoin(code, ''), language: lan} }
 
+blockquote = 
+    leading_indent '>' [ \t]* value:((leading_indent '>' [ \t]*)?  lb:leaf_block &{ return lb.type != 'blank_lines' } { return lb } )+ separator
+    { return { type: 'blockquote', children: value } }
+
 link_reference_url =
     ('\n'[ ]* / [ ]*) url:[^\n" \(\)]+
     { return url.join('') }
 
 link_reference_title = 
-    ('\n'[ ]* / [ ]+) '"' title:[^"]+ '"'
+    ('\n'[ ]* / [ ]+) '"' title:(special_character / [^"])+ '"'
     { return title.join('') }
 
 link_reference_name = 
-    name:[^\n\]\[]+
+    name:(special_character / [^\n\]\[])+
     { return name.join('') }
 
 link_reference_definition = 
@@ -184,11 +193,10 @@ leading_indent =
 
 code_pre = '`'!'``' / '\n'!'`' / [^\n`]
 
-separator = ' '*('\n'+eof? / eof)
+separator = [ \t]*('\n'eof? / eof)
 { return { type: '' } }
 
 eof = !.
-
 
 // pre-processed character
 collapsed_whitespace = [ \t]+ { return ' ' }
@@ -197,7 +205,6 @@ trim_whitespace = [ \t]+
 
 special_character = 
     backslash_escape / html_entity
-
 
 backslash_escape = 
     be:('\\#' / '\\*' / '\\-' / '\\_' / '\\~' / '\\`' / '\\.' / '\\[' / '\\]' / 
@@ -252,7 +259,6 @@ strong_emphasis =
     marker_end:('***' / '___') &{ return marker_start == marker_end }  
     { return { type: 'strong_emphasis', content: trim(deepJoin(strong_emphasis, '') ) } }
 
-
 strikethrough = 
     s:'~'+ strikethrough:(special_character / char:[^\n~] / collapsed_whitespace)+ '~'+
     { return { type: 'strikethrough', content: trim(deepJoin(strikethrough, '') ) } }
@@ -265,20 +271,18 @@ autolink =
     { return { type: 'link', url: deepJoin(url, ''), name: deepJoin(url, ''), title: deepJoin(url, '') } }
 
 link =
-    '[' name:[^\n\]\[]+ '](' [ ]* url:[^\n" \(\)]+ title:([ \t]+ '"' t:[^\n\"]+ '"' { return t })? [ ]* ')'
+    '[' name:(special_character / [^\n\]\[])+ '](' [ \t]* url:[^\n" \(\)]+ title:([ \t]+ '"' t:(special_character / [^\n\"])+ '"' { return t })? [ \t]* ')'
     { return { type: 'link', name: name.join(''), url: url.join(''), title: title ? title.join('') : name.join('') } }
 
 link_reference = 
-    '[' name:[^\n\]\[]+ ']'  &{ return findLinkReference(name.join('')) != null } 
+    '[' name:(special_character / [^\n\]\[])+ ']'  &{ return findLinkReference(name.join('')) != null } 
     { var ref = findLinkReference(name.join('')); return Object.assign({}, ref, { type: 'link' }) }
 
 image = 
-    '![' name:[^\n\]\[]+ '](' [ ]* url:[^\n" \(\)]+ title:([ \t]+ '"' t:[^\n\"]+ '"' { return t })? [ ]* ')'
+    '![' name:(special_character / [^\n\]\[])+ '](' [ \t]* url:[^\n" \(\)]+ title:([ \t]+ '"' t:(special_character / [^\n\"])+ '"' { return t })? [ \t]* ')'
     { return { type: 'image', name: name.join(''), url: url.join(''), title: title ? title.join('') : name.join('') } }
 
 hard_break = 
     '\\\n' 
     { return { type: 'hard_break' } }
-
-
 
