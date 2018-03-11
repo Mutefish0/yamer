@@ -1,26 +1,31 @@
+@import './mixin-markdown';
+
 .markdown-workspace {
     .headbar {
         background: #EEF1F3;
     }
     .workspace {
         position: relative;
-        height: 400px;
+        height: 600px;
         .editor {
             padding: 14px;
-            width: calc(100% - 240px);
+            width: 50%;
             height: 100%;
             background: #606E7B;
             color: #fff;
             box-sizing: border-box;
+            overflow: auto;
         }
         .minimap {
             position: absolute;
             top: 0;
             right: 0;
             padding: 8px;
-            width: 240px;
+            width: 50%;
             height: 100%;
             box-sizing: border-box;
+            @include markdown;
+            overflow: auto;
         }
     }
 }

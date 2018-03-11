@@ -30,6 +30,8 @@ type LeafBlock =
     | CodeBlock
     | LinkReferenceDefinition
     | BlankLines
+    | List 
+    | ListItem
 
 interface Paragraph {
     type: 'paragraph',
@@ -61,6 +63,16 @@ interface LinkReferenceDefinition {
 
 interface BlankLines {
     type: 'blank_lines'
+}
+
+interface List {
+    type: 'list',
+    children: (ListItem | List)[]
+}
+
+interface ListItem {
+    type: 'list_item',
+    children: Inline[]
 }
 
 type Block = Blockquote | LeafBlock

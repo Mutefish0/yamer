@@ -48,6 +48,10 @@ const block2ReactElement = (block: Block, index) => {
         case 'code_block':
             let code = React.createElement('code', { lang: block.language, key: index }, block.content)
             return React.createElement('pre', { key: index }, code) 
+        case 'list_item':
+            return React.createElement('li', { key: index }, block.children.map(inlien2ReactElement))
+        case 'list':
+            return React.createElement('ul', { key: index }, block.children.map(block2ReactElement))
         case 'link_reference_definition':
         case 'blank_lines':
         default: 
@@ -66,7 +70,7 @@ interface MarkdownMinimapProps {
 const MarkdownMinimap = ({ ast }: MarkdownMinimapProps) => {
     let t = ast2ReactElement(ast) 
     return (
-        <div className="minimap">
+        <div className="minimap" contentEditable={false}>
             {t}
         </div>
     )

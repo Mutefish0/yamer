@@ -15,10 +15,11 @@
     "geek",
     "Electron"
   ],
-  "author": "Ivan Cheng",
+  "author": "Ivan Chen",
   "license": "ISC",
   "devDependencies": {
     "@types/mocha": "^2.2.44",
+    "@types/ramda": "types/npm-ramda#dist",
     "@types/react": "^16.0.40",
     "@types/react-dom": "^16.0.4",
     "@types/rx": "^4.1.1",
@@ -38,6 +39,7 @@
   "dependencies": {
     "immutable": "^3.8.2",
     "mocha": "^4.0.1",
+    "ramda": "^0.25.0",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
     "rxjs": "^5.5.6",

@@ -1,27 +1,18 @@
-# storyflow
-极客的笔记本
+# storyflow - 极客的笔记本
+极客的笔记本，使书写Markdown变得更愉悦
 
-# 技术方案
+## 技术栈
+- Electron
+- React
+- Typescript
+- Glup & Rollup
 
-inline实现
+## 运行平台
+暂只支持Mac
 
-symbol+tab symbol颜色变浅
-输入文字 连带文字颜色也变浅
-match-symbol+tba symbol消失，文字颜色变正常, 光标移出
-
-```js
-`
-![]  ->  ![$]($)
-[]   ->  [$]($)
-**   ->  **$**
-***  ->  ***$***
-~~   ->  ~~$~~
-\`   ->  \`$\`
-#    ->  # $
->    ->  > $
-
-
-`
-```
-
+## 特性（暂只实现部分
+- Markdown 语法高亮
+- 代码高亮
+- 可双向编辑
+- 支持导出为PDF获取HTML文件
 

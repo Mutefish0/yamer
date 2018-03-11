@@ -63,18 +63,18 @@
 <body>
     <h1>Markdown Compiler Playground <button id="refresh">刷新</button></h1>
     <h2>input markdown source: </h2>
-    <textarea name="" id="source" cols="30" rows="10"></textarea>
+    <div contentEditable="true" name="" id="source" cols="30" rows="10"></div>
     <h2>output ast</h2>
     <p id="ast"></p>
 </body>
 <script>
-    var Parser = require('../lib/markdown')
+    var Parser = require('../libs/markdown.js')
     var prettyHtml = require('json-pretty-html').default
     var astElement = document.querySelector('#ast')
     var sourceElement = document.querySelector('#source')
     var refreshButton = document.querySelector('#refresh')
     sourceElement.addEventListener('input', function () {
-        var ast = Parser.parse(sourceElement.value)
+        var ast = Parser.parse(sourceElement.innerText)
         astElement.innerHTML = prettyHtml(ast)
     })
     refreshButton.addEventListener('click', function () {

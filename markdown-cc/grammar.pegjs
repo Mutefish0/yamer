@@ -20,8 +20,6 @@
         ]
     }
 
- * Blockquote
- * List 
  * Task
 **/
 
@@ -45,8 +43,12 @@
         return plainStrArr.join(joint)
     }
 
+    function computeSpaceCount (str) {
+        return str.replace(/\t/g, '    ').length
+    }
+
     function trim (str) {
-        return str.replace(/^[ \t]*/, '').replace(/[ \t]*$/, '')
+        return str.replace(/^space*/, '').replace(/space*$/, '')
     }
 
     /* enough for safety of documents with unicode */
@@ -129,7 +131,7 @@ block =
     container_block / leaf_block
 
 leaf_block = 
-    heading / thematic_break / code_block / link_reference_definition / blank_lines / paragraph
+    heading / list / thematic_break / code_block / link_reference_definition / blank_lines / paragraph
 
 container_block = 
     blockquote 
@@ -155,7 +157,7 @@ code_block =
     { return { type: 'code_block', content: deepJoin(code, ''), language: lan} }
 
 blockquote = 
-    leading_indent '>' [ \t]* value:((leading_indent '>' [ \t]*)?  lb:leaf_block &{ return lb.type != 'blank_lines' } { return lb } )+ separator
+    leading_indent '>' space* value:((leading_indent '>' space*)?  lb:leaf_block &{ return lb.type != 'blank_lines' } { return lb } )+ separator
     { return { type: 'blockquote', children: value } }
 
 link_reference_url =
@@ -173,6 +175,22 @@ link_reference_name =
 link_reference_definition = 
     leading_indent '[' name:link_reference_name ']:' url:link_reference_url title:link_reference_title? separator
     { return defineLinkReference(name, { type: "link_reference_definition", name: name, url: url, title: title }) }
+
+list = 
+    first:list_item 
+    rest:(
+        (l:list_item &{ return l.leading == first.leading } { return l }) /
+        (l:list_level2 &{ return l.leading > first.leading } { return l })
+    )*
+    { return { type: 'list',  leading: first.leading, children: [first].concat(rest)} }
+
+list_item = leading:space* [*-]collapsed_whitespace value:(merged_inline / ([\n]!([\n] / list_item) { return { type: 'hard_break' } }))+ separator
+    { return { type: 'list_item', leading: computeSpaceCount(leading.join('')), children: value } }
+
+list_level2 = 
+    first:list_item 
+    rest:(l:list_item &{ return l.leading == first.leading } { return l })*
+    { return { type: 'list',  leading: first.leading, children: [first].concat(rest)} }
 
 newline_between_paragraph = 
     '\n' !(none_paragraph_block / '\n' / eof)
@@ -193,15 +211,22 @@ leading_indent =
 
 code_pre = '`'!'``' / '\n'!'`' / [^\n`]
 
-separator = [ \t]*('\n'eof? / eof)
+separator = space*('\n'eof? / eof)
 { return { type: '' } }
+
+// ref: http://www.fileformat.info/info/unicode/category/Zs/list.htm
+whitespace = 
+    w:. &{ return /[\u0020\u00A0\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u202F\u205F\u3000]/.test(w) }
+    { return w }
+
+space = whitespace / [\t]
 
 eof = !.
 
 // pre-processed character
-collapsed_whitespace = [ \t]+ { return ' ' }
+collapsed_whitespace = space+ { return ' ' }
 
-trim_whitespace = [ \t]+
+trim_whitespace = space+
 
 special_character = 
     backslash_escape / html_entity
@@ -218,10 +243,10 @@ html_entity =
 text_without_backslash = 
     (backslash_escape / html_entity / [^\n`])+
 
-character_without_inline_indicator = special_character / [^\n`*_~\\]
+character_without_inline_indicator = special_character / [^\n`*_~\\\[!]
 
 inline_indicator = 
-    char:[`*_~\\]
+    char:[`*_~\\\[!]
     { return { type: 'text', content: char} }
 
 text_without_inline_indicator = text:character_without_inline_indicator+
@@ -242,19 +267,19 @@ code =
     { return { type: 'code', content: trim(deepJoin(code, '') ) } }
 
 emphasis = 
-    marker_start:[*_] 
+    marker_start:[*_]!space
     em:(special_character / char:[^\n] &{ return char != marker_start } / collapsed_whitespace)+ 
     marker_end:[*_] &{ return marker_start == marker_end }
     { return { type: 'emphasis', content: trim(deepJoin(em, '') ) } }
 
 strong = 
-    marker_start:('**' / '__')
+    marker_start:('**' / '__')!space
     strong:(special_character / char:[^\n] &{ return char != marker_start[0] } / collapsed_whitespace)+
     marker_end:('**' / '__') &{ return marker_start == marker_end }  
     { return { type: 'strong', content: trim(deepJoin(strong, '') ) } }
 
 strong_emphasis =  
-    marker_start:('***' / '___')
+    marker_start:('***' / '___')!space
     strong_emphasis:(special_character / char:[^\n] &{ return char != marker_start[0] } / collapsed_whitespace)+
     marker_end:('***' / '___') &{ return marker_start == marker_end }  
     { return { type: 'strong_emphasis', content: trim(deepJoin(strong_emphasis, '') ) } }
@@ -271,7 +296,7 @@ autolink =
     { return { type: 'link', url: deepJoin(url, ''), name: deepJoin(url, ''), title: deepJoin(url, '') } }
 
 link =
-    '[' name:(special_character / [^\n\]\[])+ '](' [ \t]* url:[^\n" \(\)]+ title:([ \t]+ '"' t:(special_character / [^\n\"])+ '"' { return t })? [ \t]* ')'
+    '[' name:(special_character / [^\n\]\[])+ '](' space* url:[^\n" \(\)]+ title:(space+ '"' t:(special_character / [^\n\"])+ '"' { return t })? space* ')'
     { return { type: 'link', name: name.join(''), url: url.join(''), title: title ? title.join('') : name.join('') } }
 
 link_reference = 
@@ -279,7 +304,7 @@ link_reference =
     { var ref = findLinkReference(name.join('')); return Object.assign({}, ref, { type: 'link' }) }
 
 image = 
-    '![' name:(special_character / [^\n\]\[])+ '](' [ \t]* url:[^\n" \(\)]+ title:([ \t]+ '"' t:(special_character / [^\n\"])+ '"' { return t })? [ \t]* ')'
+    '![' name:(special_character / [^\n\]\[])+ '](' space* url:[^\n" \(\)]+ title:(space+ '"' t:(special_character / [^\n\"])+ '"' { return t })? space* ')'
     { return { type: 'image', name: name.join(''), url: url.join(''), title: title ? title.join('') : name.join('') } }
 
 hard_break = 
