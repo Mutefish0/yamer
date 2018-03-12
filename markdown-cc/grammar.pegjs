@@ -125,7 +125,7 @@ start =
     separator?blocks:block* { return blocks }
 
 none_paragraph_block =    
-    container_block / heading / thematic_break / code_block / link_reference_definition / blank_lines
+    container_block / list / list_item / heading / thematic_break / code_block / link_reference_definition / blank_lines
 
 block = 
     container_block / leaf_block
@@ -153,7 +153,7 @@ language =
     { return languageAbbrTransform(lan) }
 
 code_block = 
-    '```' lan:(language?) '\n' code:(code_pre*) '\n' '```' separator
+    '```' space* lan:(language?) '\n' code:(code_pre*) '\n' '```' separator
     { return { type: 'code_block', content: deepJoin(code, ''), language: lan} }
 
 blockquote = 
@@ -192,17 +192,14 @@ list_level2 =
     rest:(l:list_item &{ return l.leading == first.leading } { return l })*
     { return { type: 'list',  leading: first.leading, children: [first].concat(rest)} }
 
-newline_between_paragraph = 
-    '\n' !(none_paragraph_block / '\n' / eof)
 
-inline_with_optional_newline = 
-    inline:merged_inline nbp:newline_between_paragraph?
-    { return nbp ? Object.assign({}, inline, { content: inline.content.concat(' ') }) : inline }
+paragraph_newline = 
+    '\n' !(none_paragraph_block / '\n' / eof)
+    { return { type: 'text', content: ' ' } }
 
 paragraph = 
-    value:(inline_with_optional_newline+)separator
+    value:(merged_inline / paragraph_newline)+ separator
     { return { type: 'paragraph', children: value } }
-
 
 character = special_character / [^\n]
 
