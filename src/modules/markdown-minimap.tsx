@@ -1,5 +1,6 @@
 import React from 'react'
 import { MarkdownAST, Block, Inline } from 'libs/markdown'
+import hljs from 'highlight.js'
 
 const inlien2ReactElement = (inline: Inline, index) => {
     switch (inline.type) {
@@ -46,7 +47,14 @@ const block2ReactElement = (block: Block, index) => {
         case 'thematic_break':
             return React.createElement('hr', { key: index }) 
         case 'code_block':
-            let code = React.createElement('code', { lang: block.language, key: index }, block.content)
+            let highlight = hljs.highlight(block.language, block.content, true)
+            let code = React.createElement('code', 
+            { 
+                className: 'hljs', 
+                lang: highlight.language, 
+                key: index, 
+                dangerouslySetInnerHTML: { __html: highlight.value}}
+            )
             return React.createElement('pre', { key: index }, code) 
         case 'list_item':
             return React.createElement('li', { key: index }, block.children.map(inlien2ReactElement))
@@ -63,17 +71,17 @@ const ast2ReactElement = (ast: MarkdownAST) => {
     return ast.map(block2ReactElement)
 }
 
-interface MarkdownMinimapProps {
-    ast: MarkdownAST
-}
 
-const MarkdownMinimap = ({ ast }: MarkdownMinimapProps) => {
-    let t = ast2ReactElement(ast) 
-    return (
-        <div className="minimap" contentEditable={false}>
-            {t}
-        </div>
-    )
+
+class MarkdownMinimap extends React.Component<{ ast: MarkdownAST}> {
+    render () {
+        let view = ast2ReactElement(this.props.ast)
+        return (
+            <div className="minimap" contentEditable={false}>
+                {view}
+            </div>
+        )
+    }
 }
 
 export default MarkdownMinimap

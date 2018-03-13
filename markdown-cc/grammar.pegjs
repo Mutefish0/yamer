@@ -124,17 +124,14 @@
 start = 
     separator?blocks:block* { return blocks }
 
-none_paragraph_block =    
-    container_block / list / list_item / heading / thematic_break / code_block / link_reference_definition / blank_lines
-
 block = 
     container_block / leaf_block
 
 leaf_block = 
-    heading / list / thematic_break / code_block / link_reference_definition / blank_lines / paragraph
+    heading / list / thematic_break / link_reference_definition / blank_lines / paragraph
 
 container_block = 
-    blockquote 
+    code_block / blockquote
 
 blank_lines = 
     '\n'+
@@ -156,8 +153,15 @@ code_block =
     '```' space* lan:(language?) '\n' code:(code_pre*) '\n' '```' separator
     { return { type: 'code_block', content: deepJoin(code, ''), language: lan} }
 
+_exclude_code_block_and_blank_lines = 
+    block: block &{ return ['code_block', 'blank_lines'].indexOf(block.type) == -1 } 
+    { return block }
+
+leaf_block_exclude_blank_lines =
+    lb:leaf_block &{ return lb.type != 'blank_lines' } { return lb }
+
 blockquote = 
-    leading_indent '>' space* value:((leading_indent '>' space*)?  lb:leaf_block &{ return lb.type != 'blank_lines' } { return lb } )+ separator
+    leading_indent '>' space* value:((leading_indent '>' space*)? block:leaf_block_exclude_blank_lines !code_block { return block })+ separator
     { return { type: 'blockquote', children: value } }
 
 link_reference_url =
@@ -192,9 +196,11 @@ list_level2 =
     rest:(l:list_item &{ return l.leading == first.leading } { return l })*
     { return { type: 'list',  leading: first.leading, children: [first].concat(rest)} }
 
+block_exclude_paragraph = 
+    block:block &{ return block.type != 'paragraph' } { return block }
 
 paragraph_newline = 
-    '\n' !(none_paragraph_block / '\n' / eof)
+    '\n' !(block_exclude_paragraph / '\n' / eof)
     { return { type: 'text', content: ' ' } }
 
 paragraph = 
@@ -206,7 +212,7 @@ character = special_character / [^\n]
 leading_indent = 
     ' '?' '?' '?
 
-code_pre = '`'!'``' / '\n'!'`' / [^\n`]
+code_pre = '`'!'``' / '\n'!'```' / [^\n`]
 
 separator = space*('\n'eof? / eof)
 { return { type: '' } }

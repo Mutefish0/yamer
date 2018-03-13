@@ -15,6 +15,10 @@
             color: #fff;
             box-sizing: border-box;
             overflow: auto;
+            border: none;
+            resize: none;
+            outline: none;
+            font-size: inherit;
         }
         .minimap {
             position: absolute;
