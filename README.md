@@ -1,5 +1,5 @@
-# storyflow - 极客的笔记本
-极客的笔记本，使书写Markdown变得更愉悦
+# Yamer - Yat Another Markdown Editor & Reader
+使书写变得简单有趣
 
 ## 技术栈
 - Electron
