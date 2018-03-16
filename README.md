@@ -1,4 +1,4 @@
-# Yamer - Yat Another Markdown Editor & Reader
+# Yamer - Yet Another Markdown Editor and Reader
 使书写变得简单有趣
 
 ## 技术栈
