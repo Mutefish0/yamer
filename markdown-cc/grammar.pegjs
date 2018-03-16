@@ -122,10 +122,11 @@
 }
 
 start = 
-    separator?blocks:block* { return blocks }
+    separator?blocks:block* { return { ast: blocks, source: text() } }
 
 block = 
-    container_block / leaf_block
+    block:(container_block / leaf_block)
+    { return Object.assign({}, block, { location: location() }) }
 
 leaf_block = 
     heading / list / thematic_break / link_reference_definition / blank_lines / paragraph
@@ -150,8 +151,8 @@ language =
     { return languageAbbrTransform(lan) }
 
 code_block = 
-    '```' space* lan:(language?) '\n' code:(code_pre*) '\n' '```' separator
-    { return { type: 'code_block', content: deepJoin(code, ''), language: lan} }
+    '```' space* lan:(language?) '\n' code:(cp:code_pre* { return { content: deepJoin(cp, ''), location: location() } }) '\n' '```' separator
+    { return { type: 'code_block', code: code, language: lan} }
 
 _exclude_code_block_and_blank_lines = 
     block: block &{ return ['code_block', 'blank_lines'].indexOf(block.type) == -1 } 
@@ -201,7 +202,7 @@ block_exclude_paragraph =
 
 paragraph_newline = 
     '\n' !(block_exclude_paragraph / '\n' / eof)
-    { return { type: 'text', content: ' ' } }
+    { return { type: 'text', content: ' ', location: location() } }
 
 paragraph = 
     value:(merged_inline / paragraph_newline)+ separator
@@ -263,7 +264,8 @@ merged_text =
     {  return { type: 'text', content: ct.map(i => i.content).join('') } }
 
 merged_inline = 
-    hard_break / code / image / inline_link / strong_emphasis / strong / emphasis / strikethrough / merged_text
+    inline:(hard_break / code / image / inline_link / strong_emphasis / strong / emphasis / strikethrough / merged_text)
+    { return Object.assign({}, inline, { location: location() }) }
 
 code = 
     '`' code:(special_character / [^\n`] / collapsed_whitespace)+ '`'

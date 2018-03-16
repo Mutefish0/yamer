@@ -47,7 +47,7 @@ const block2ReactElement = (block: Block, index) => {
         case 'thematic_break':
             return React.createElement('hr', { key: index }) 
         case 'code_block':
-            let highlight = hljs.highlight(block.language, block.content, true)
+            let highlight = hljs.highlight(block.language, block.code.content, true)
             let code = React.createElement('code', 
             { 
                 className: 'hljs', 
@@ -67,13 +67,13 @@ const block2ReactElement = (block: Block, index) => {
     }   
 }
 
-const ast2ReactElement = (ast: MarkdownAST) => {
+const ast2ReactElement = (ast: Block[]) => {
     return ast.map(block2ReactElement)
 }
 
 
 
-class MarkdownMinimap extends React.Component<{ ast: MarkdownAST}> {
+class MarkdownMinimap extends React.Component<{ ast: Block[] }> {
     render () {
         let view = ast2ReactElement(this.props.ast)
         return (

@@ -1,6 +1,7 @@
 import React from 'react'
 import MarkdownEditor from './markdown-editor'
 import MarkdownMinimap from './markdown-minimap'
+import MarkdownShadowEditor from './shadow-editor'
 
 interface State {
     ast: any
@@ -10,7 +11,10 @@ class MarkdownWorkspace extends React.Component<{}, State> {
     constructor (props) {
         super(props)
         this.state = {
-            ast: []
+            ast: {
+                source: '',
+                ast: []
+            }
         }
     }
 
@@ -24,7 +28,8 @@ class MarkdownWorkspace extends React.Component<{}, State> {
                 <Headbar />
                 <div className="workspace">
                     <MarkdownEditor onAstChange={this.handleAstChange.bind(this)} />
-                    <MarkdownMinimap ast={this.state.ast} />
+                    <MarkdownMinimap ast={this.state.ast.ast} />
+                    <MarkdownShadowEditor ast={this.state.ast}/>
                 </div>
             </div>
         )
