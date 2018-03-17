@@ -13,7 +13,7 @@ class MarkdownWorkspace extends React.Component<{}, State> {
         this.state = {
             ast: {
                 source: '',
-                ast: []
+                entities: []
             }
         }
     }
@@ -28,7 +28,7 @@ class MarkdownWorkspace extends React.Component<{}, State> {
                 <Headbar />
                 <div className="workspace">
                     <MarkdownEditor onAstChange={this.handleAstChange.bind(this)} />
-                    <MarkdownMinimap ast={this.state.ast.ast} />
+                    <MarkdownMinimap ast={this.state.ast} />
                     <MarkdownShadowEditor ast={this.state.ast}/>
                 </div>
             </div>

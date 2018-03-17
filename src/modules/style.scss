@@ -10,7 +10,7 @@
         .editor {
             padding: 14px;
             width: 50%;
-            height: 100%;
+            height: 50%;
             background: #606E7B;
             color: #fff;
             box-sizing: border-box;
@@ -30,6 +30,30 @@
             box-sizing: border-box;
             @include markdown;
             overflow: auto;
+        }
+        .shadow-editor {
+            position: absolute;
+            left: 0;
+            top: 50%;
+            width: 50%;
+            height: 50%;
+            padding: 14px;
+            background: rgb(107, 128, 148);
+            color: #fff;
+            box-sizing: border-box;
+            overflow: auto;
+            pre {
+                font-family: inherit;
+                font-size: inherit;
+                @include dracula;
+
+                code {
+                    display: inline !important;
+                    background: inherit !important;
+                    padding: 0 !important;
+                    font-family: Menlo, Consolas !important;
+                }
+            }
         }
     }
 }

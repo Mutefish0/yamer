@@ -1,6 +1,10 @@
 import React from 'react'
-import { MarkdownAST, Block, Inline } from 'libs/markdown'
+import { MAST, Block, Inline } from 'libs/markdown'
 import hljs from 'highlight.js'
+
+/**
+ * @TODO 用JSX来改造，更直观
+ */
 
 const inlien2ReactElement = (inline: Inline, index) => {
     switch (inline.type) {
@@ -47,7 +51,7 @@ const block2ReactElement = (block: Block, index) => {
         case 'thematic_break':
             return React.createElement('hr', { key: index }) 
         case 'code_block':
-            let highlight = hljs.highlight(block.language, block.code.content, true)
+            let highlight = hljs.highlight(block.language, block.children[0].content, true)
             let code = React.createElement('code', 
             { 
                 className: 'hljs', 
@@ -73,9 +77,9 @@ const ast2ReactElement = (ast: Block[]) => {
 
 
 
-class MarkdownMinimap extends React.Component<{ ast: Block[] }> {
+class MarkdownMinimap extends React.Component<{ ast: MAST }> {
     render () {
-        let view = ast2ReactElement(this.props.ast)
+        let view = ast2ReactElement(this.props.ast.entities)
         return (
             <div className="minimap" contentEditable={false}>
                 {view}

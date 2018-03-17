@@ -21,18 +21,24 @@ type InlineElement =
     | 'text'
 
 interface Inline {
-    type: InlineElement,
-    content?: string,
+    type: InlineElement
+    content?: string
 
-    name?: string,
-    url?: string,
-    title?: string,
+    name?: string
+    url?: string
+    title?: string
 
     location: Location
 }
 
+interface Text {
+    type: 'text'
+    content?: string
+    location: Location
+}
+
 interface Blockquote {
-    type: 'blockquote',
+    type: 'blockquote'
     children: LeafBlock[]
     location: Location
 }
@@ -48,14 +54,14 @@ type LeafBlock =
     | ListItem
 
 interface Paragraph {
-    type: 'paragraph',
+    type: 'paragraph'
     children: Inline[]
     location: Location
 }
 
 interface Heading {
-    type: 'heading',
-    level: number,
+    type: 'heading'
+    level: number
     children: Inline[]
     location: Location
 }
@@ -66,19 +72,16 @@ interface ThematicBreak {
 }
 
 interface CodeBlock {
-    type: 'code_block',
-    code: {
-        content: string,
-        location: Location
-    }
+    type: 'code_block'
+    children: Text[]
     language: string
     location: Location
 }
 
 interface LinkReferenceDefinition {
-    type: 'link_reference_definition',
-    name: string,
-    url: string,
+    type: 'link_reference_definition'
+    name: string
+    url: string
     title?: string
     location: Location
 }
@@ -95,16 +98,18 @@ interface List {
 }
 
 interface ListItem {
-    type: 'list_item',
+    type: 'list_item'
     children: Inline[]
     location: Location
 }
 
-type Block = Blockquote | LeafBlock
+type ContainerBlock = Blockquote | CodeBlock
 
-export type MarkdownAST = { 
-    ast: Block[],
+type Block = ContainerBlock | LeafBlock
+
+export type MAST = { 
+    entities: Block[]
     source: string
 }
 
-export function parse (source: string): MarkdownAST
+export function parse (source: string): MAST

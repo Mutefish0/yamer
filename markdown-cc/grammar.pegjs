@@ -105,6 +105,8 @@
                 return 'javascript'
             case 'ts':
                 return 'typescript'
+            case null:
+                return 'shell'
             default:
                 return language
         }
@@ -122,18 +124,17 @@
 }
 
 start = 
-    separator?blocks:block* { return { ast: blocks, source: text() } }
+    separator?blocks:block* { return { entities: blocks, source: text() } }
 
 block = 
-    block:(container_block / leaf_block)
-    { return Object.assign({}, block, { location: location() }) }
+    container_block / leaf_block
 
 leaf_block = 
-    heading / list / thematic_break / link_reference_definition / blank_lines / paragraph
-
+    block:(heading / list / thematic_break / link_reference_definition / blank_lines / paragraph)
+    { return Object.assign({}, block, { location: location() }) }
 container_block = 
-    code_block / blockquote
-
+    block:(code_block / blockquote)
+    { return Object.assign({}, block, { location: location() }) }
 blank_lines = 
     '\n'+
     { return { type: 'blank_lines' } }
@@ -147,12 +148,12 @@ thematic_break =
     { return { type: 'thematic_break' } }
 
 language = 
-    lan:('js' / 'javascript' / 'coffescript' / 'ts' / 'typescript' / 'html' / 'css' / 'ruby' / 'python' / 'java'  / 'go' /  'erlang' / 'c' / 'c++' / 'c#' / 'objective-c' / 'php' / 'swift' / 'r' / 'matlab')
+    lan:('js' / 'javascript' / 'coffescript' / 'ts' / 'typescript' / 'html' / 'css' / 'ruby' / 'python' / 'java'  / 'go' /  'erlang' / 'c' / 'c++' / 'c#' / 'objective-c' / 'php' / 'swift' / 'r' / 'matlab')?
     { return languageAbbrTransform(lan) }
 
 code_block = 
-    '```' space* lan:(language?) '\n' code:(cp:code_pre* { return { content: deepJoin(cp, ''), location: location() } }) '\n' '```' separator
-    { return { type: 'code_block', code: code, language: lan} }
+    '```' space* lan:language '\n' code:(cp:code_pre* { return { type: 'text', content: deepJoin(cp, ''), location: location() } }) '\n' '```' separator
+    { return { type: 'code_block', children: [code], language: lan} }
 
 _exclude_code_block_and_blank_lines = 
     block: block &{ return ['code_block', 'blank_lines'].indexOf(block.type) == -1 } 
@@ -160,6 +161,7 @@ _exclude_code_block_and_blank_lines =
 
 leaf_block_exclude_blank_lines =
     lb:leaf_block &{ return lb.type != 'blank_lines' } { return lb }
+
 
 blockquote = 
     leading_indent '>' space* value:((leading_indent '>' space*)? block:leaf_block_exclude_blank_lines !code_block { return block })+ separator
@@ -190,7 +192,7 @@ list =
     { return { type: 'list',  leading: first.leading, children: [first].concat(rest)} }
 
 list_item = leading:space* [*-]collapsed_whitespace value:(merged_inline / ([\n]!([\n] / list_item) { return { type: 'hard_break' } }))+ separator
-    { return { type: 'list_item', leading: computeSpaceCount(leading.join('')), children: value } }
+    { return { type: 'list_item', leading: computeSpaceCount(leading.join('')), children: value, location: location() } }
 
 list_level2 = 
     first:list_item 

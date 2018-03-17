@@ -1,5 +1,5 @@
 import React from 'react'
-import { MarkdownAST, Block, Inline, Heading, ListItem, Blockquote } from 'libs/markdown'
+import { MAST, Block, Inline, Heading, ListItem, Blockquote, Paragraph } from 'libs/markdown'
 import hljs from 'highlight.js'
 
 interface Point {
@@ -17,68 +17,130 @@ const extractSource = (source: string, p: Location) => {
     return source.slice(p.start.offset, p.end.offset)
 }
 
-const resolveBlockWithChildren = (source, block: Heading | ListItem, index) => {
-    let children = []
-    let start = block.children[0].location.start.offset
+const inline2ReactElement = (source, inline: Inline, index) => {
+    switch (inline.type) {
+        case 'hard_break':
+        case 'image':
+        case 'link':
+        case 'text':
+            return (
+                <span className={inline.type} key={index}>
+                    {extractSource(source, inline.location)}
+                </span>
+            )
+        case 'code':
+            return (
+                <code className={inline.type} key={index}>
+                    {extractSource(source, inline.location)}
+                </code>
+            )
+        case 'strong_emphasis':
+            return (
+                <strong className={inline.type} key={index}>
+                    <em>
+                        {extractSource(source, inline.location)}
+                    </em>
+                </strong>
+            )
+        case 'strong':
+            return (
+                <strong className={inline.type} key={index}>
+                    {extractSource(source, inline.location)}
+                </strong>
+            )
+        case 'emphasis':
+            return (
+                <em className={inline.type} key={index}>
+                    {extractSource(source, inline.location)}
+                </em>
+            )
+        case 'strikethrough':
+            return (
+                <del className={inline.type} key={index}>
+                    {extractSource(source, inline.location)}
+                </del>
+            )
+    }
+}
+
+const prefixElement = (source, block) => {
+    let start = block.children[0].location.start.offset 
+    let _start = block.location.start.offset
+    return (
+        <span className={`${block.type}-prefix`} key='prefix'>
+            {source.slice(_start, start)}
+        </span>
+    )
+}
+
+const suffixElement = (source, block) => {
+    if (block.type == 'code_block') {
+        console.log('cb')
+        window.cb = block
+    }
+
     let end = block.children[block.children.length - 1].location.end.offset
-
-    children.push(source.slice(block.location.start.offset, start))
-    children.push(block.children.map(inlien2ReactElement.bind({}, source)))
-    children.push(source.slice(end, block.location.end.offset))
-
-    return React.createElement('span', { key: index, className: block.type }, children)
-} 
-
-const inlien2ReactElement = (source, inline: Inline, index) => {
-    return React.createElement('span', { className: inline.type, key: index }, extractSource(source, inline.location))
+    let _end = block.location.end.offset
+    return (
+        <span className={`${block.type}-suffix`} key='suffix'>
+            {source.slice(end, _end)}
+        </span>
+    )
 }
 
 const block2ReactElement = (source, block: Block, index) => {
     switch (block.type) {
         case 'blockquote':
-            let blockquoteChildren = []
-            let bqStart = block.children[0].location.start.offset
-            let bqEnd = block.children[block.children.length - 1].location.end.offset
-
-            blockquoteChildren.push(source.slice(block.location.start, bqStart))
-            blockquoteChildren.push(block.children.map(block2ReactElement.bind({}, source)))
-            blockquoteChildren.push(source.slice(bqEnd, block.location.end.offset))
-
-            return React.createElement('span', { key: index, className: block.type }, blockquoteChildren)
+            return (
+                <span key={index} className={block.type}>
+                    {prefixElement(source, block)}
+                    {block.children.map(block2ReactElement.bind({}, source)) }
+                    {suffixElement(source, block)}
+                </span>
+            )
         case 'paragraph':
-            return React.createElement('span', { key: index }, block.children.map(inlien2ReactElement.bind({}, source)))
         case 'heading':
         case 'list_item':
-            return resolveBlockWithChildren(source, block, index)
+            return (
+                <span key={index} className={block.type}>
+                    {prefixElement(source, block)}
+                    {block.children.map(inline2ReactElement.bind({}, source))}
+                    {suffixElement(source, block)}
+                </span>
+            )
         case 'thematic_break':
             return React.createElement('span', { key: index }, extractSource(source, block.location))
         case 'code_block':
-            let codeBlockChildren = []
-            let codeStart = block.code.location.start.offset
-            let codeEnd = block.code.location.end.offset
-
-            codeBlockChildren.push(source.slice(block.location.start, codeStart))
-
-            let highlight = hljs.highlight(block.language, block.code.content, true)
-            let code = React.createElement('code',
-                {
-                    className: 'hljs',
-                    lang: highlight.language,
-                    key: index,
-                    dangerouslySetInnerHTML: { __html: highlight.value }
-                }
+            let highlight = hljs.highlight(block.language, block.children[0].content, true)
+            return (
+                <span key={index} className={block.type}>
+                    {prefixElement(source, block)}
+                    <code 
+                        key={0} className="hljs" 
+                        lang={highlight.language}
+                        dangerouslySetInnerHTML={{__html: highlight.value}}
+                    ></code>
+                    {suffixElement(source, block)}
+                </span>
             )
-
-            codeBlockChildren.push(code)
-            codeBlockChildren.push(source.slice(codeEnd, block.location.end.offset))
-            
-            return React.createElement('span', { key: index, className: block.type }, codeBlockChildren)
         case 'list':
-            return React.createElement('span', { key: index, className: block.type }, block.children.map(block2ReactElement.bind({}, source)))
+            return (
+                <span key={index} className={block.type}>
+                    {block.children.map(block2ReactElement.bind({}, source))}
+                </span>
+            )
         case 'link_reference_definition':
-            return React.createElement('span', { key: index }, extractSource(source, block.location))
+            return (
+                <span key={index} className={block.type}>
+                    {extractSource(source, block.location)}
+                </span>
+            )
         case 'blank_lines':
-            return React.createElement('span', { key: index }, extractSource(source, block.location))
+            return (
+                <span key={index} className={block.type}>
+                    {extractSource(source, block.location)}
+                </span>
+            )
         default:
             return undefined
     }  
@@ -89,15 +151,15 @@ const ast2ReactElement = (source: string, ast: Block[]) => {
 }
 
 
-class ShadowEditor extends React.Component<{ ast: MarkdownAST }> {
+class ShadowEditor extends React.Component<{ ast: MAST }> {
     render () {
-        let view = ast2ReactElement(this.props.ast.source, this.props.ast.ast)
+        let view = ast2ReactElement(this.props.ast.source, this.props.ast.entities)
         return (
-            <pre>
-                <div className="shadow-editor" contentEditable={false}>
-                    {view}
-                </div>
-            </pre>
+            <div className="shadow-editor" contentEditable={false}>
+                <pre>
+                {view}
+                </pre>
+            </div>
         )
     }
 }
