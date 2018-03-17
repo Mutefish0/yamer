@@ -44,6 +44,8 @@ const block2ReactElement = (block: Block, index) => {
     switch (block.type) {
         case 'blockquote':
             return React.createElement('blockquote', { key: index }, block.children.map(block2ReactElement))
+        case 'blockquote_unit':
+            return block.children.map(block2ReactElement)
         case 'paragraph':
             return React.createElement('p', { key: index }, block.children.map(inlien2ReactElement))
         case 'heading':

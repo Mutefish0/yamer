@@ -37,9 +37,15 @@ interface Text {
     location: Location
 }
 
+interface BlockquoteUnit {
+    type: 'blockquote_unit'
+    children: LeafBlock[]
+    location: Location
+}
+
 interface Blockquote {
     type: 'blockquote'
-    children: LeafBlock[]
+    children: BlockquoteUnit[]
     location: Location
 }
 
@@ -103,7 +109,7 @@ interface ListItem {
     location: Location
 }
 
-type ContainerBlock = Blockquote | CodeBlock
+type ContainerBlock = Blockquote | BlockquoteUnit | CodeBlock
 
 type Block = ContainerBlock | LeafBlock
 

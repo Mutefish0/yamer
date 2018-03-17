@@ -140,7 +140,7 @@ blank_lines =
     { return { type: 'blank_lines' } }
 
 heading =  
-    leading_indent indicator:('#' '#'?'#'?'#'?'#'?'#'?) ' '+value:merged_inline+ separator  
+    leading_indent indicator:('#' '#'?'#'?'#'?'#'?'#'?) ' '+value:inline+ separator  
     { return { type: 'heading', level: indicator.join('').length, children: value } }
 
 thematic_break = 
@@ -162,9 +162,16 @@ _exclude_code_block_and_blank_lines =
 leaf_block_exclude_blank_lines =
     lb:leaf_block &{ return lb.type != 'blank_lines' } { return lb }
 
+blockquote_unit_children =
+    lb:leaf_block &{ return !(lb.type == 'blank_lines' || lb.isbq) } 
+    { return lb }
+
+blockquote_unit = 
+    leading_indent '>' space* value:(block:blockquote_unit_children !code_block { return block })+
+    { return { type: 'blockquote_unit', children: value, location: location() } }
 
 blockquote = 
-    leading_indent '>' space* value:((leading_indent '>' space*)? block:leaf_block_exclude_blank_lines !code_block { return block })+ separator
+    value:blockquote_unit+
     { return { type: 'blockquote', children: value } }
 
 link_reference_url =
@@ -191,7 +198,7 @@ list =
     )*
     { return { type: 'list',  leading: first.leading, children: [first].concat(rest)} }
 
-list_item = leading:space* [*-]collapsed_whitespace value:(merged_inline / ([\n]!([\n] / list_item) { return { type: 'hard_break' } }))+ separator
+list_item = leading:space* [*-]collapsed_whitespace value:(inline / ([\n]!([\n] / list_item) { return { type: 'hard_break', location: location() } }))+ separator
     { return { type: 'list_item', leading: computeSpaceCount(leading.join('')), children: value, location: location() } }
 
 list_level2 = 
@@ -207,8 +214,10 @@ paragraph_newline =
     { return { type: 'text', content: ' ', location: location() } }
 
 paragraph = 
-    value:(merged_inline / paragraph_newline)+ separator
-    { return { type: 'paragraph', children: value } }
+    value:(inline / paragraph_newline)+ separator 
+    // isbq 用来判断当前paragraph是否为blockquote，因为leafblock中没有包含blockquote
+    // 在blockquote_unit中需要用到
+    { return { type: 'paragraph', children: value, isbq: /^[ ]{0,3}>/.test(text()) } }
 
 character = special_character / [^\n]
 
@@ -258,15 +267,15 @@ inline_indicator =
 text_without_inline_indicator = text:character_without_inline_indicator+
     { return { type: 'text', content: deepJoin(text, '') } } 
 
+text_unit = 
+    inline_indicator / text_without_inline_indicator
+
+text = 
+    text:text_unit+
+    { return { type: 'text', content: text.map(i => i.content).join('') } }
+
 inline = 
-    hard_break / code / image / inline_link / strong_emphasis / strong / emphasis / strikethrough / text_without_inline_indicator / inline_indicator
-
-merged_text = 
-    ct: (il:inline &{ return il.type == 'text' }  { return il } )+
-    {  return { type: 'text', content: ct.map(i => i.content).join('') } }
-
-merged_inline = 
-    inline:(hard_break / code / image / inline_link / strong_emphasis / strong / emphasis / strikethrough / merged_text)
+    inline:(hard_break / code / image / inline_link / strong_emphasis / strong / emphasis / strikethrough / text)
     { return Object.assign({}, inline, { location: location() }) }
 
 code = 

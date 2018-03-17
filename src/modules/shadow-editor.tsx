@@ -74,11 +74,6 @@ const prefixElement = (source, block) => {
 }
 
 const suffixElement = (source, block) => {
-    if (block.type == 'code_block') {
-        console.log('cb')
-        window.cb = block
-    }
-
     let end = block.children[block.children.length - 1].location.end.offset
     let _end = block.location.end.offset
     return (
@@ -93,8 +88,14 @@ const block2ReactElement = (source, block: Block, index) => {
         case 'blockquote':
             return (
                 <span key={index} className={block.type}>
-                    {prefixElement(source, block)}
                     {block.children.map(block2ReactElement.bind({}, source)) }
+                </span>
+            )
+        case 'blockquote_unit':
+            return (
+                <span key={index} className={block.type}>
+                    {prefixElement(source, block)}
+                    {block.children.map(block2ReactElement.bind({}, source))}
                     {suffixElement(source, block)}
                 </span>
             )
