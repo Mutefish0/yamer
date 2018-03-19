@@ -5,7 +5,8 @@ import MarkdownShadowEditor from './shadow-editor'
 import { Subject, Subscription } from 'rxjs/Rx'
 
 interface State {
-    ast: any
+    ast: any,
+    selectionRange: [number, number]
 }
 
 class MarkdownWorkspace extends React.Component<{}, State> {
@@ -15,7 +16,8 @@ class MarkdownWorkspace extends React.Component<{}, State> {
             ast: {
                 source: '',
                 entities: []
-            }
+            },
+            selectionRange: [0, 0]
         }
         
         let self = this as any
@@ -37,10 +39,12 @@ class MarkdownWorkspace extends React.Component<{}, State> {
                 <div className="workspace">
                     <MarkdownEditor 
                         onAstChange={this.handleAstChange.bind(this)} 
+                        onCursorChange={selectionRange => this.setState({ selectionRange })}
                         cursorSource={(this as any).shadowEditorSource}
                     />
                     <MarkdownMinimap ast={this.state.ast}  />
                     <MarkdownShadowEditor 
+                        selectionRange={this.state.selectionRange}
                         ast={this.state.ast} 
                         onCursorChange={this.handleShadownEditorCursorChange.bind(this)}
                     />

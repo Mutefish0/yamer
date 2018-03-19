@@ -264,20 +264,14 @@ character_without_inline_indicator = special_character / [^\n`*_~\\\[!]
 
 inline_indicator = 
     char:[`*_~\\\[!]
-    { return { type: 'text', content: char} }
+    { return { type: 'text', content: char } } 
 
-text_without_inline_indicator = text:character_without_inline_indicator+
+text_without_inline_indicator = 
+    text:character_without_inline_indicator+
     { return { type: 'text', content: deepJoin(text, '') } } 
 
-text_unit = 
-    inline_indicator / text_without_inline_indicator
-
-text = 
-    text:text_unit+
-    { return { type: 'text', content: text.map(i => i.content).join('') } }
-
 inline = 
-    inline:(hard_break / code / image / inline_link / strong_emphasis / strong / emphasis / strikethrough / text)
+    inline:(hard_break / code / image / inline_link / strong_emphasis / strong / emphasis / strikethrough / text_without_inline_indicator / inline_indicator)
     { return Object.assign({}, inline, { location: location() }) }
 
 code = 

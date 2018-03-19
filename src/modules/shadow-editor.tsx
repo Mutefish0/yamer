@@ -19,75 +19,16 @@ const extractSource = (source: string, p: Location) => {
 }
 
 const inline2ReactElement = (captureCursorClick, source, inline: Inline, index) => {
-    switch (inline.type) {
-        case 'hard_break':
-        case 'image':
-        case 'link':
-        case 'text':
-            return (
-                <span 
-                    className={inline.type} key={index}
-                    data-range={[inline.location.start.offset, inline.location.end.offset]}
-                    onClick={captureCursorClick}
-                >
-                    {extractSource(source, inline.location)}
-                </span>
-            )
-        case 'code':
-            return (
-                <code 
-                    className={inline.type} key={index}
-                    data-range={[inline.location.start.offset, inline.location.end.offset]}
-                    onClick={captureCursorClick}
-                >
-                    {extractSource(source, inline.location)}
-                </code>
-            )
-        case 'strong_emphasis':
-            return (
-                <strong 
-                    className={inline.type} key={index}
-                    data-range={[inline.location.start.offset, inline.location.end.offset]}
-                    onClick={captureCursorClick}
-                >
-                    <em>
-                        {extractSource(source, inline.location)}
-                    </em>
-                </strong>
-            )
-        case 'strong':
-            return (
-                <strong 
-                    className={inline.type} key={index}
-                    data-range={[inline.location.start.offset, inline.location.end.offset]}
-                    onClick={captureCursorClick}
-                >
-                    {extractSource(source, inline.location)}
-                </strong>
-            )
-        case 'emphasis':
-            return (
-                <em 
-                    className={inline.type} key={index}
-                    data-range={[inline.location.start.offset, inline.location.end.offset]}
-                    onClick={captureCursorClick}
-                >
-                    {extractSource(source, inline.location)}
-                </em>
-            )
-        case 'strikethrough':
-            return (
-                <del 
-                    className={inline.type} key={index}
-                    data-range={[inline.location.start.offset, inline.location.end.offset]}
-                    onClick={captureCursorClick}
-                >
-                    {extractSource(source, inline.location)}
-                </del>
-            )
-    }
+    return (
+        <span
+            className={inline.type} key={index}
+            data-range={[inline.location.start.offset, inline.location.end.offset]}
+            onClick={captureCursorClick}
+        >
+            {extractSource(source, inline.location)}
+        </span>
+    )
 }
-
 
 const prefixElement = (source, block, captureCursorClick) => {
     let start = block.children[0].location.start.offset 
@@ -206,13 +147,19 @@ const ast2ReactElement = (source: string, ast: Block[], captureCursorClick) => {
 }
 
 
-class ShadowEditor extends React.Component<{ ast: MAST, onCursorChange: Function }> {
+interface Props {
+    ast: MAST, 
+    onCursorChange: Function,
+    selectionRange: [number, number]
+}
+
+class ShadowEditor extends React.Component<Props> {
     captureCursorClick (e) {
         let range = Caret.getRange()
         let baseOffset = parseInt(e.currentTarget.getAttribute('data-range').split(',')[0])
         let cursorRange = [baseOffset + range.startOffset, baseOffset + range.endOffset]
-        
         this.props.onCursorChange(cursorRange)
+
         e.stopPropagation()
         e.preventDefault()
     }
