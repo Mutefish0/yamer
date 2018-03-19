@@ -3,10 +3,11 @@ import MarkdownParser from 'libs/markdown.js'
 import Caret from 'base/caret'
 import { CharCode } from 'base/char-code'
 import * as R from 'ramda' 
-
+import { Subject, Subscription } from 'rxjs/Rx'
 
 interface Props {
-    onAstChange: (ast) => any 
+    onAstChange: (ast) => any,
+    cursorSource: Subject<[number, number]>
 }
 
 class MarkdownEditor extends React.Component<Props> {
@@ -26,10 +27,19 @@ class MarkdownEditor extends React.Component<Props> {
         }
     }
 
+    componentDidMount () {
+        this.props.cursorSource.subscribe(cursor => {
+            let target = this.refs['editor'] as any
+            target.setSelectionRange(cursor[0], cursor[1])
+            target.focus() 
+        })
+    }
+
     render () {
         return (
             <textarea
                 className="editor"
+                ref="editor"
                 onInput={this.handleInput.bind(this)}
                 onKeyDown={this.handleKeyDown.bind(this)}
             >

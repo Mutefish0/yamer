@@ -38,20 +38,25 @@
             width: 50%;
             height: 50%;
             padding: 14px;
-            background: rgb(107, 128, 148);
-            color: #fff;
+            background:#fff;
+            color: #333;
             box-sizing: border-box;
             overflow: auto;
             pre {
                 font-family: inherit;
                 font-size: inherit;
-                @include dracula;
-
-                code {
-                    display: inline !important;
-                    background: inherit !important;
-                    padding: 0 !important;
-                    font-family: Menlo, Consolas !important;
+                cursor: text;
+                @include github;
+                .code_block {
+                    .code_block-prefix, .code_block-suffix {
+                        color: #6a737d;
+                    }
+                    code {
+                        display: inline !important;
+                        background: inherit !important;
+                        padding: 0 !important;
+                        font-family: "SFMono-Regular",Consolas,"Liberation Mono",Menlo,Courier,monospace !important;
+                    }
                 }
             }
         }

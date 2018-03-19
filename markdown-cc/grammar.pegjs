@@ -105,6 +105,8 @@
                 return 'javascript'
             case 'ts':
                 return 'typescript'
+            case 'md':
+                return 'markdown'
             case null:
                 return 'shell'
             default:
@@ -148,7 +150,7 @@ thematic_break =
     { return { type: 'thematic_break' } }
 
 language = 
-    lan:('js' / 'javascript' / 'coffescript' / 'ts' / 'typescript' / 'html' / 'css' / 'ruby' / 'python' / 'java'  / 'go' /  'erlang' / 'c' / 'c++' / 'c#' / 'objective-c' / 'php' / 'swift' / 'r' / 'matlab')?
+    lan:('md'/ 'markdown'/ 'diff' / 'js' / 'javascript' / 'coffescript' / 'ts' / 'typescript' / 'html' / 'css' / 'ruby' / 'python' / 'java'  / 'go' /  'erlang' / 'c' / 'c++' / 'c#' / 'objective-c' / 'php' / 'swift' / 'r' / 'matlab')?
     { return languageAbbrTransform(lan) }
 
 code_block = 
