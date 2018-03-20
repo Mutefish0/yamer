@@ -1,5 +1,5 @@
 {
-  "name": "storyflow",
+  "name": "yamer",
   "version": "1.0.0",
   "description": "极客的笔记本",
   "main": "index.js",
@@ -13,7 +13,8 @@
     "note",
     "story",
     "geek",
-    "Electron"
+    "Electron",
+    "yamer"
   ],
   "author": "Ivan Chen",
   "license": "ISC",

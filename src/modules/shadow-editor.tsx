@@ -25,8 +25,8 @@ const inline2ReactElement = (selectionRange, captureCursorClick, source, inline:
     const iEnd = inline.location.end.offset
 
     const noneSelected = 
-        sEnd <= iStart
-        || sStart >= iEnd
+        sEnd < iStart
+        || sStart > iEnd
     let innerView
 
     if (noneSelected) {
@@ -35,16 +35,30 @@ const inline2ReactElement = (selectionRange, captureCursorClick, source, inline:
         const leftCut = Math.max(sStart, iStart)
         const rightCut = Math.min(sEnd, iEnd)
         const isCollapsed = leftCut == rightCut
+
         innerView = [
-            source.slice(iStart, sStart),
-            <span key='1' className='selected'>
+            <span 
+                key='0' onClick={captureCursorClick}
+                data-range={[iStart, leftCut]}
+            >
+                {source.slice(iStart, leftCut)}
+            </span>,
+            <span 
+                key='1' className='selected' 
+                onClick={captureCursorClick} data-range={[leftCut, rightCut]}
+            >
                 {
                     isCollapsed ? 
                         <span className='cursor'></span>
-                        :source.slice(sStart, sEnd)
+                        :source.slice(leftCut, rightCut)
                 }
             </span>,
-            source.slice(sEnd, iEnd)
+            <span 
+                key='2' onClick={captureCursorClick}
+                data-range={[rightCut, iEnd]}
+            >
+                {source.slice(rightCut, iEnd)}
+            </span>
         ]
     }
 
@@ -96,14 +110,14 @@ const block2ReactElement = (selectionRange, captureCursorClick, source, block: B
         case 'blockquote':
             return (
                 <span key={index} className={block.type}>
-                    {block.children.map(block2ReactElement.bind({}, captureCursorClick, source)) }
+                    {block.children.map(block2ReactElement.bind({}, selectionRange, captureCursorClick, source)) }
                 </span>
             )
         case 'blockquote_unit':
             return (
                 <span key={index} className={block.type}>
                     {prefixElement(source, block, captureCursorClick)}
-                    {block.children.map(block2ReactElement.bind({}, captureCursorClick, source))}
+                    {block.children.map(block2ReactElement.bind({}, selectionRange, captureCursorClick, source))}
                     {suffixElement(source, block, captureCursorClick)}
                 </span>
             )
@@ -145,7 +159,7 @@ const block2ReactElement = (selectionRange, captureCursorClick, source, block: B
         case 'list':
             return (
                 <span key={index} className={block.type}>
-                    {block.children.map(block2ReactElement.bind({}, captureCursorClick, source))}
+                    {block.children.map(block2ReactElement.bind({}, selectionRange, captureCursorClick, source))}
                 </span>
             )
         case 'link_reference_definition':
@@ -196,14 +210,31 @@ class ShadowEditor extends React.Component<Props, State> {
         }
         let self = this as any 
         self.cursorSleepTimeout = null 
+        self.previousReceivedCursorRange = this.props.selectionRange
     }
 
     captureCursorClick (e) {
-        let range = Caret.getRange()
-        let baseOffset = parseInt(e.currentTarget.getAttribute('data-range').split(',')[0])
-        let cursorRange = [baseOffset + range.startOffset, baseOffset + range.endOffset]
-        this.props.onCursorChange(cursorRange)
+        const range = Caret.getRange()
 
+        const startContainer = range.startContainer.parentElement
+        const endContainer = range.endContainer.parentElement
+
+        const baseStartOffset = parseInt(startContainer.getAttribute('data-range').split(',')[0])
+        const baseEndOffset = parseInt(endContainer.getAttribute('data-range').split(',')[0])
+
+        let cursorRange = [baseStartOffset + range.startOffset, baseEndOffset + range.endOffset]
+        const prevRange = (this as any).previousReceivedCursorRange
+
+        //shift点击选中适配
+        if (e.shiftKey) {
+            cursorRange = [Math.min(cursorRange[0], prevRange[0]), Math.max(cursorRange[1], prevRange[1])]
+        }
+        
+        this.props.onCursorChange(cursorRange)
+        
+        let self = this as any
+        self.previousReceivedCursorRange = cursorRange
+        
         e.stopPropagation()
         e.preventDefault()
     }

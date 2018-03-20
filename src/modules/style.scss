@@ -25,6 +25,7 @@
     .workspace {
         position: relative;
         height: 600px;
+        letter-spacing: 1px;
         .editor {
             padding: 14px;
             width: 50%;
@@ -95,6 +96,7 @@
                 .selected {
                     background: indianred;
                     position: relative;
+                    color: #fff;
                     .cursor {
                         background: indianred;
                         position: absolute;
@@ -103,6 +105,10 @@
                         top: 0px;
                         left: -0.5px;
                     }
+                }
+                ::selection {
+                    color: #fff;
+                    background: indianred;
                 }
             }
             pre.cursor-sleep {
