@@ -1,5 +1,23 @@
 @import './mixin-markdown';
 
+@keyframes flash {
+    0% {
+        background: indianred;
+    }
+    35% {
+        background: indianred;
+    }
+    40% {
+        background: rgba(255,255,255,0);
+    }
+    95% {
+        background: rgba(255,255,255,0);
+    }
+    100% {
+        background: indianred;        
+    }
+}
+
 .markdown-workspace {
     .headbar {
         background: #EEF1F3;
@@ -72,6 +90,24 @@
                 }
                 .code {
                     color: #6a737d;
+                }
+
+                .selected {
+                    background: indianred;
+                    position: relative;
+                    .cursor {
+                        background: indianred;
+                        position: absolute;
+                        width: 1px;
+                        height: 18px;
+                        top: 0px;
+                        left: -0.5px;
+                    }
+                }
+            }
+            pre.cursor-sleep {
+                .cursor {
+                    animation: flash 1s infinite;
                 }
             }
         }

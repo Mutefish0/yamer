@@ -18,16 +18,47 @@ const extractSource = (source: string, p: Location) => {
     return source.slice(p.start.offset, p.end.offset)
 }
 
-const inline2ReactElement = (captureCursorClick, source, inline: Inline, index) => {
+const inline2ReactElement = (selectionRange, captureCursorClick, source, inline: Inline, index) => {
+    const sStart = selectionRange[0]
+    const sEnd = selectionRange[1]
+    const iStart = inline.location.start.offset
+    const iEnd = inline.location.end.offset
+
+    const noneSelected = 
+        sEnd <= iStart
+        || sStart >= iEnd
+    let innerView
+
+    if (noneSelected) {
+        innerView = extractSource(source, inline.location)
+    } else {
+        const leftCut = Math.max(sStart, iStart)
+        const rightCut = Math.min(sEnd, iEnd)
+        const isCollapsed = leftCut == rightCut
+        innerView = [
+            source.slice(iStart, sStart),
+            <span key='1' className='selected'>
+                {
+                    isCollapsed ? 
+                        <span className='cursor'></span>
+                        :source.slice(sStart, sEnd)
+                }
+            </span>,
+            source.slice(sEnd, iEnd)
+        ]
+    }
+
     return (
         <span
-            className={inline.type} key={index}
+            className={inline.type} 
+            key={index}
             data-range={[inline.location.start.offset, inline.location.end.offset]}
             onClick={captureCursorClick}
         >
-            {extractSource(source, inline.location)}
+            {innerView}
         </span>
     )
+    
 }
 
 const prefixElement = (source, block, captureCursorClick) => {
@@ -60,7 +91,7 @@ const suffixElement = (source, block, captureCursorClick) => {
     )
 }
 
-const block2ReactElement = (captureCursorClick, source, block: Block, index) => {
+const block2ReactElement = (selectionRange, captureCursorClick, source, block: Block, index) => {
     switch (block.type) {
         case 'blockquote':
             return (
@@ -82,7 +113,7 @@ const block2ReactElement = (captureCursorClick, source, block: Block, index) => 
             return (
                 <span key={index} className={block.type}>
                     {prefixElement(source, block, captureCursorClick)}
-                    {block.children.map(inline2ReactElement.bind({}, captureCursorClick, source))}
+                    {block.children.map(inline2ReactElement.bind({}, selectionRange, captureCursorClick, source))}
                     {suffixElement(source, block, captureCursorClick)}
                 </span>
             )
@@ -142,8 +173,8 @@ const block2ReactElement = (captureCursorClick, source, block: Block, index) => 
     }  
 }
 
-const ast2ReactElement = (source: string, ast: Block[], captureCursorClick) => {
-    return ast.map(block2ReactElement.bind({}, captureCursorClick, source))
+const ast2ReactElement = (source: string, ast: Block[], captureCursorClick, selectionRange) => {
+    return ast.map(block2ReactElement.bind({}, selectionRange, captureCursorClick, source))
 }
 
 
@@ -153,7 +184,20 @@ interface Props {
     selectionRange: [number, number]
 }
 
-class ShadowEditor extends React.Component<Props> {
+interface State {
+    isCursorSleep: boolean
+}
+
+class ShadowEditor extends React.Component<Props, State> {
+    constructor (props) {
+        super(props)
+        this.state = {
+            isCursorSleep: true
+        }
+        let self = this as any 
+        self.cursorSleepTimeout = null 
+    }
+
     captureCursorClick (e) {
         let range = Caret.getRange()
         let baseOffset = parseInt(e.currentTarget.getAttribute('data-range').split(',')[0])
@@ -164,11 +208,26 @@ class ShadowEditor extends React.Component<Props> {
         e.preventDefault()
     }
 
+    componentWillReceiveProps (nextProps) {
+        const newRange = nextProps.selectionRange
+        const range = this.props.selectionRange
+        if (newRange[0] != range[0] || newRange[1] != range[1]) {
+            this.setState({isCursorSleep: false})
+            clearTimeout((this as any).cursorSleepTimeout)
+            setTimeout(() => this.setState({isCursorSleep: true }), 800)
+        }
+    }
+
     render () {
-        let view = ast2ReactElement(this.props.ast.source, this.props.ast.entities, this.captureCursorClick.bind(this))
+        let view = ast2ReactElement(
+            this.props.ast.source, 
+            this.props.ast.entities,
+            this.captureCursorClick.bind(this), 
+            this.props.selectionRange
+        )
         return (
             <div className="shadow-editor" contentEditable={false}>
-                <pre>
+                <pre className={this.state.isCursorSleep ? 'cursor-sleep' : ''}>
                 {view}
                 </pre>
             </div>
