@@ -59,6 +59,11 @@ gulp.task('browser-test', cb => {
     })
 })
 
+gulp.task('copy-assets', () => {
+    gulp.src('src/assets/**/*.*')
+    .pipe(gulp.dest('dist/assets/'))
+})
+
 gulp.task('sass', () => {
     gulp.src('src/**/*.scss')
     .pipe(sass().on('error', sass.logError))
@@ -75,4 +80,4 @@ gulp.task('livereload', () => {
     server.watch(__dirname + '/dist/')
 })
 
-gulp.task('default', ['electron', 'livereload', 'rollup-watch', 'watch:sass'])
+gulp.task('default', ['electron', 'livereload', 'rollup-watch', 'watch:sass', 'copy-assets'])

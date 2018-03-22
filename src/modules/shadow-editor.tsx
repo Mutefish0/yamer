@@ -2,6 +2,7 @@ import React from 'react'
 import { MAST, Block, Inline, Heading, ListItem, Blockquote, Paragraph } from 'libs/markdown'
 import hljs from 'highlight.js'
 import Caret from 'base/caret'
+import classNames from 'classnames'
 
 interface Point {
     offset: number
@@ -18,42 +19,42 @@ const extractSource = (source: string, p: Location) => {
     return source.slice(p.start.offset, p.end.offset)
 }
 
-const inline2ReactElement = (selectionRange, captureCursorClick, source, inline: Inline, index) => {
+const cursorSplitElement = (selectionRange, captureCursorClick, source, location) => {
     const sStart = selectionRange[0]
     const sEnd = selectionRange[1]
-    const iStart = inline.location.start.offset
-    const iEnd = inline.location.end.offset
+    const iStart = location.start.offset
+    const iEnd = location.end.offset
 
-    const noneSelected = 
+    const noneSelected =
         sEnd < iStart
         || sStart > iEnd
     let innerView
 
     if (noneSelected) {
-        innerView = extractSource(source, inline.location)
+        innerView = extractSource(source, location)
     } else {
         const leftCut = Math.max(sStart, iStart)
         const rightCut = Math.min(sEnd, iEnd)
         const isCollapsed = leftCut == rightCut
 
         innerView = [
-            <span 
+            <span
                 key='0' onClick={captureCursorClick}
                 data-range={[iStart, leftCut]}
             >
                 {source.slice(iStart, leftCut)}
             </span>,
-            <span 
-                key='1' className='selected' 
+            <span
+                key='1' className='selected'
                 onClick={captureCursorClick} data-range={[leftCut, rightCut]}
             >
                 {
-                    isCollapsed ? 
+                    isCollapsed ?
                         <span className='cursor'></span>
-                        :source.slice(leftCut, rightCut)
+                        : source.slice(leftCut, rightCut)
                 }
             </span>,
-            <span 
+            <span
                 key='2' onClick={captureCursorClick}
                 data-range={[rightCut, iEnd]}
             >
@@ -61,7 +62,11 @@ const inline2ReactElement = (selectionRange, captureCursorClick, source, inline:
             </span>
         ]
     }
+    return innerView 
+}
 
+
+const inline2ReactElement = (selectionRange, captureCursorClick, source, inline: Inline, index) => {
     return (
         <span
             className={inline.type} 
@@ -69,13 +74,12 @@ const inline2ReactElement = (selectionRange, captureCursorClick, source, inline:
             data-range={[inline.location.start.offset, inline.location.end.offset]}
             onClick={captureCursorClick}
         >
-            {innerView}
+            {cursorSplitElement(selectionRange, captureCursorClick, source, inline.location)}
         </span>
     )
-    
 }
 
-const prefixElement = (source, block, captureCursorClick) => {
+const prefixElement = (source, block, captureCursorClick, selectionRange) => {
     let start = block.children[0].location.start.offset 
     let _start = block.location.start.offset
     return (
@@ -85,12 +89,12 @@ const prefixElement = (source, block, captureCursorClick) => {
             onClick={captureCursorClick}
             data-range={[_start, start]}
         >
-            {source.slice(_start, start)}
+            {cursorSplitElement(selectionRange, captureCursorClick, source, { start: { offset: _start }, end: { offset: start } })}
         </span>
     )
 }
 
-const suffixElement = (source, block, captureCursorClick) => {
+const suffixElement = (source, block, captureCursorClick, selectionRange) => {
     let end = block.children[block.children.length - 1].location.end.offset
     let _end = block.location.end.offset
     return (
@@ -100,7 +104,7 @@ const suffixElement = (source, block, captureCursorClick) => {
             onClick={captureCursorClick}
             data-range={[end, _end]}
         >
-            {source.slice(end, _end)}
+            {cursorSplitElement(selectionRange, captureCursorClick, source, { start: { offset: end }, end: { offset: _end } })}
         </span>
     )
 }
@@ -116,9 +120,9 @@ const block2ReactElement = (selectionRange, captureCursorClick, source, block: B
         case 'blockquote_unit':
             return (
                 <span key={index} className={block.type}>
-                    {prefixElement(source, block, captureCursorClick)}
+                    {prefixElement(source, block, captureCursorClick, selectionRange)}
                     {block.children.map(block2ReactElement.bind({}, selectionRange, captureCursorClick, source))}
-                    {suffixElement(source, block, captureCursorClick)}
+                    {suffixElement(source, block, captureCursorClick, selectionRange)}
                 </span>
             )
         case 'paragraph':
@@ -126,9 +130,9 @@ const block2ReactElement = (selectionRange, captureCursorClick, source, block: B
         case 'list_item':
             return (
                 <span key={index} className={block.type}>
-                    {prefixElement(source, block, captureCursorClick)}
+                    {prefixElement(source, block, captureCursorClick, selectionRange)}
                     {block.children.map(inline2ReactElement.bind({}, selectionRange, captureCursorClick, source))}
-                    {suffixElement(source, block, captureCursorClick)}
+                    {suffixElement(source, block, captureCursorClick, selectionRange)}
                 </span>
             )
         case 'thematic_break':
@@ -138,22 +142,25 @@ const block2ReactElement = (selectionRange, captureCursorClick, source, block: B
                     data-range={[block.location.start.offset, block.location.end.offset]}
                     onClick={captureCursorClick}
                 >
-                    {extractSource(source, block.location)}
+                    {cursorSplitElement(selectionRange, captureCursorClick, source, block.location)}
                 </span>
             )
         case 'code_block':
-            let highlight = hljs.highlight(block.language, block.children[0].content, true)
             return (
-                <span key={index} className={block.type} >
-                    {prefixElement(source, block, captureCursorClick)}
-                    <code 
-                        key={0} className="hljs" 
-                        lang={highlight.language}
-                        dangerouslySetInnerHTML={{__html: highlight.value}}
+                <span 
+                    key={index} className={block.type} 
+                    data-range={[block.location.start.offset, block.location.end.offset]}
+                >
+                    {prefixElement(source, block, captureCursorClick, selectionRange)}
+                    
+                    <code key={index} 
                         data-range={[block.children[0].location.start.offset, block.children[0].location.end.offset]}
                         onClick={captureCursorClick}
-                    ></code>
-                    {suffixElement(source, block, captureCursorClick)}
+                    >
+                        {cursorSplitElement(selectionRange, captureCursorClick, source, block.children[0].location)}
+                    </code>
+                    
+                    {suffixElement(source, block, captureCursorClick, selectionRange)}
                 </span>
             )
         case 'list':
@@ -169,7 +176,7 @@ const block2ReactElement = (selectionRange, captureCursorClick, source, block: B
                     data-range={[block.location.start.offset, block.location.end.offset]}
                     onClick={captureCursorClick}
                 >
-                    {extractSource(source, block.location)}
+                    {cursorSplitElement(selectionRange, captureCursorClick, source, block.location)}
                 </span>
             )
         case 'blank_lines':
@@ -179,7 +186,7 @@ const block2ReactElement = (selectionRange, captureCursorClick, source, block: B
                     data-range={[block.location.start.offset, block.location.end.offset]}
                     onClick={captureCursorClick}
                 >
-                    {extractSource(source, block.location)}
+                    {cursorSplitElement(selectionRange, captureCursorClick, source, block.location)}
                 </div>
             )
         default:
@@ -188,6 +195,25 @@ const block2ReactElement = (selectionRange, captureCursorClick, source, block: B
 }
 
 const ast2ReactElement = (source: string, ast: Block[], captureCursorClick, selectionRange) => {
+    if (!ast.length) {
+        ast = [
+            {
+                "type": "blank_lines",
+                "location": {
+                    "start": {
+                        "offset": 0,
+                        "line": 1,
+                        "column": 1
+                    },
+                    "end": {
+                        "offset": 1,
+                        "line": 2,
+                        "column": 1
+                    }
+                }
+            }
+        ]
+    }
     return ast.map(block2ReactElement.bind({}, selectionRange, captureCursorClick, source))
 }
 
@@ -199,14 +225,16 @@ interface Props {
 }
 
 interface State {
-    isCursorSleep: boolean
+    isCursorSleep: boolean,
+    isFocused: boolean
 }
 
 class ShadowEditor extends React.Component<Props, State> {
     constructor (props) {
         super(props)
         this.state = {
-            isCursorSleep: true
+            isCursorSleep: true,
+            isFocused: false
         }
         let self = this as any 
         self.cursorSleepTimeout = null 
@@ -258,7 +286,12 @@ class ShadowEditor extends React.Component<Props, State> {
         )
         return (
             <div className="shadow-editor" contentEditable={false}>
-                <pre className={this.state.isCursorSleep ? 'cursor-sleep' : ''}>
+                <pre 
+                    className={classNames([
+                        { 'cursor-sleep': this.state.isCursorSleep},
+                        {'focused': this.state.isFocused}
+                    ])}
+                >
                 {view}
                 </pre>
             </div>

@@ -94,6 +94,17 @@
 		'&darr': '↓', // Down Arrow
 
         '&hellip;': '…', // Ellipse
+
+        // customize
+        '&yuan;': '¥', // CNY/RMB (Currency)
+
+        '&apple;': '', // Apple
+        '&icmd;': '⌘', // Apple Command Key
+        '&iopt;': '⌥', // Apple Option Key
+        '&ishift;': '⇧', // Apple Shift Key
+        '&ictrl;': '⌃', // Apple Control Key
+        '&idelete;': '⌫', // Apple Delete Key
+        '&iesc;': '⎋' // Apple Esc Key
     }
     function getHtmlEntity (str) {
         return entitiesMap[str] || null
@@ -126,7 +137,7 @@
 }
 
 start = 
-    separator?blocks:block* { return { entities: blocks, source: text() } }
+    blocks:block* { return { entities: blocks, source: text() } }
 
 block = 
     container_block / leaf_block

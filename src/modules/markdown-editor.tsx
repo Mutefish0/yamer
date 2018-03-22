@@ -38,7 +38,8 @@ class MarkdownEditor extends React.Component<Props> {
         let prevRange = [0, 0]
 
         const backspaceSource = Observable.fromEvent(document, 'keyup').filter(e => e['keyCode'] == CharCode.BackSpace)
-        const documentCursorChangeSource = Observable.merge(backspaceSource, Observable.fromEvent(document, 'selectionchange'))
+        const carriageReturnSource = Observable.fromEvent(document, 'keyup').filter(e => e['keyCode'] == CharCode.CarriageReturn)
+        const documentCursorChangeSource = Observable.merge(backspaceSource, carriageReturnSource, Observable.fromEvent(document, 'selectionchange'))
         const cursorChangeSource = documentCursorChangeSource.map(e => {
             const refEditor = this.refs['editor'] as any
             return [refEditor.selectionStart, refEditor.selectionEnd]
