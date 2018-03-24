@@ -67,9 +67,13 @@
                 cursor: text;
                 @include github;
                 
-                .code_block code {
+                .code_block {
                     color: #6a737d;
                     font-family: "SFMono-Regular",Consolas,"Liberation Mono",Menlo,Courier,monospace !important;
+                }
+
+                .blank_lines {
+                    display: block;
                 }
 
                 .heading {

@@ -3,6 +3,7 @@ import MarkdownEditor from './markdown-editor'
 import MarkdownMinimap from './markdown-minimap'
 import MarkdownShadowEditor from './shadow-editor'
 import { Subject, Subscription } from 'rxjs/Rx'
+import MarkdownParser from 'libs/markdown.js'
 
 interface State {
     ast: any,
@@ -13,10 +14,7 @@ class MarkdownWorkspace extends React.Component<{}, State> {
     constructor (props) {
         super(props)
         this.state = {
-            ast: {
-                source: '',
-                entities: []
-            },
+            ast: MarkdownParser.parse('\n'),
             selectionRange: [0, 0]
         }
         

@@ -14,7 +14,8 @@ interface Props {
 class MarkdownEditor extends React.Component<Props> {
 
     handleInput (e) {
-        let ast = MarkdownParser.parse(e.target.value)
+        const text = e.target.value || ' '
+        const ast = MarkdownParser.parse(text) 
         this.props.onAstChange(ast)
     }
 
