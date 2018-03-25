@@ -8,6 +8,7 @@ import { Subject, Observable, Subscription } from 'rxjs/Rx'
 interface Props {
     onAstChange: (ast) => any,
     onCursorChange: (range) => any,
+    onFocusChange: (focused: boolean) => any
     cursorSource: Subject<[number, number]>
 }
 
@@ -24,6 +25,7 @@ class MarkdownEditor extends React.Component<Props> {
             let cursorOffset = e.target.selectionStart
             let value = e.target.value 
             e.target.value = `${value.slice(0, cursorOffset)}  ${value.slice(cursorOffset)}`
+            this.handleInput(e) 
             e.target.setSelectionRange(cursorOffset + 2, cursorOffset + 2);
             e.preventDefault()
         }
@@ -38,9 +40,9 @@ class MarkdownEditor extends React.Component<Props> {
 
         let prevRange = [0, 0]
 
-        const backspaceSource = Observable.fromEvent(document, 'keyup').filter(e => e['keyCode'] == CharCode.BackSpace)
+        const inputSource = Observable.fromEvent(this.refs['editor'] as Element, 'input')
         const carriageReturnSource = Observable.fromEvent(document, 'keyup').filter(e => e['keyCode'] == CharCode.CarriageReturn)
-        const documentCursorChangeSource = Observable.merge(backspaceSource, carriageReturnSource, Observable.fromEvent(document, 'selectionchange'))
+        const documentCursorChangeSource = Observable.merge(inputSource, carriageReturnSource, Observable.fromEvent(document, 'selectionchange'))
         const cursorChangeSource = documentCursorChangeSource.map(e => {
             const refEditor = this.refs['editor'] as any
             return [refEditor.selectionStart, refEditor.selectionEnd]
@@ -68,6 +70,8 @@ class MarkdownEditor extends React.Component<Props> {
                 ref="editor"
                 onInput={this.handleInput.bind(this)}
                 onKeyDown={this.handleKeyDown.bind(this)}
+                onFocus={() => this.props.onFocusChange(true)}
+                onBlur={() => this.props.onFocusChange(false)}
             >
             </textarea>
         )

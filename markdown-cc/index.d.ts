@@ -84,12 +84,19 @@ interface CodeBlock {
     location: Location
 }
 
+interface Url {
+    type: 'url',
+    content: string
+    location: Location
+}
+
 interface LinkReferenceDefinition {
     type: 'link_reference_definition'
     name: string
     url: string
     title?: string
     location: Location
+    children: [Url]
 }
 
 interface BlankLines {

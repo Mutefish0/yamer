@@ -25,19 +25,23 @@
     .workspace {
         position: relative;
         height: 600px;
-        letter-spacing: 1px;
+        letter-spacing: normal;
         .editor {
-            padding: 14px;
+            position: absolute;
+            z-index: -1;
+            left: 0;
+            top: 0;
             width: 50%;
-            height: 50%;
-            background: #606E7B;
-            color: #fff;
+            height: 100%;
+            padding: 14px;
             box-sizing: border-box;
-            overflow: auto;
+            overflow-y: auto;
+            outline: none;
             border: none;
             resize: none;
-            outline: none;
+            font-family: inherit;
             font-size: inherit;
+            word-break: break-all;
         }
         .minimap {
             position: absolute;
@@ -55,73 +59,79 @@
             left: 0;
             top: 0;
             width: 50%;
-            height: 50%;
+            height: 100%;
             padding: 14px;
             background:#fff;
             color: #333;
             box-sizing: border-box;
-            overflow: auto;
-            pre {
-                font-family: inherit;
-                font-size: inherit;
-                cursor: text;
-                @include github;
-                
-                .code_block {
-                    color: #6a737d;
-                    font-family: "SFMono-Regular",Consolas,"Liberation Mono",Menlo,Courier,monospace !important;
-                }
+            overflow-y: auto;
+            white-space: pre; 
+            cursor: text;
+            @include github;
+            
+            .code_block {
+                color: #6a737d;
+                font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+            }
 
-                .blank_lines {
-                    display: block;
-                }
+            .blank_lines {
+                display: block;
+            }
 
-                .heading {
-                    font-weight: bold;
-                }
+            .heading {
+                font-weight: bold;
+            }
 
-                .blockquote_unit-prefix, 
-                .list_item-prefix,
-                .heading-prefix {
-                    color: #6a737d;
-                }
-
-                // inline
-                .emphasis {
-                    font-style: italic;
-                }
-                .strong {
-                    font-weight: bold;
-                }
-                .strong_emphasis {
-                    font-style: italic;
-                    font-weight: bold;
-                }
-                .code {
-                    color: #6a737d;
-                }
-
-                .selected {
-                    background: indianred;
-                    position: relative;
-                    color: #fff;
-                    .cursor {
-                        background: indianred;
-                        position: absolute;
-                        width: 1px;
-                        height: 18px;
-                        top: 0px;
-                        left: -0.5px;
-                        font-weight: normal;
-                        font-style: normal;
-                    }
-                }
-                ::selection {
-                    color: #fff;
-                    background: indianred;
+            .link_reference_definition,
+            .link 
+            {
+                .url {
+                    text-decoration: underline;
                 }
             }
-            pre.cursor-sleep {
+
+            .blockquote_unit-prefix, 
+            .list_item-prefix,
+            .heading-prefix {
+                color: #6a737d;
+            }
+
+            // inline
+            .emphasis {
+                font-style: italic;
+            }
+            .strong {
+                font-weight: bold;
+            }
+            .strong_emphasis {
+                font-style: italic;
+                font-weight: bold;
+            }
+            .code {
+                color: #6a737d;
+            }
+
+            &.focused .selected {
+                background: indianred;
+                position: relative;
+                color: #fff;
+                .cursor {
+                    background: indianred;
+                    position: absolute;
+                    width: 1px;
+                    height: 18px;
+                    top: 0px;
+                    left: -0.5px;
+                    font-weight: normal;
+                    font-style: normal;
+                }
+            }
+            ::selection {
+                color: #fff;
+                background: indianred;
+            }
+            
+            &.cursor-sleep {
                 .cursor {
                     animation: flash 1s infinite;
                 }

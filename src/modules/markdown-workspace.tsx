@@ -7,7 +7,8 @@ import MarkdownParser from 'libs/markdown.js'
 
 interface State {
     ast: any,
-    selectionRange: [number, number]
+    selectionRange: [number, number],
+    editorFocused: boolean
 }
 
 class MarkdownWorkspace extends React.Component<{}, State> {
@@ -15,7 +16,8 @@ class MarkdownWorkspace extends React.Component<{}, State> {
         super(props)
         this.state = {
             ast: MarkdownParser.parse('\n'),
-            selectionRange: [0, 0]
+            selectionRange: [0, 0],
+            editorFocused: false 
         }
         
         let self = this as any
@@ -38,10 +40,12 @@ class MarkdownWorkspace extends React.Component<{}, State> {
                     <MarkdownEditor 
                         onAstChange={this.handleAstChange.bind(this)} 
                         onCursorChange={selectionRange => this.setState({ selectionRange })}
+                        onFocusChange={(focused) => this.setState({ editorFocused: focused })}
                         cursorSource={(this as any).shadowEditorSource}
                     />
                     <MarkdownMinimap ast={this.state.ast}  />
                     <MarkdownShadowEditor 
+                        focused={this.state.editorFocused}
                         selectionRange={this.state.selectionRange}
                         ast={this.state.ast} 
                         onCursorChange={this.handleShadownEditorCursorChange.bind(this)}

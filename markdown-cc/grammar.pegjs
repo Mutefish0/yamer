@@ -145,9 +145,11 @@ block =
 leaf_block = 
     block:(heading / list / thematic_break / link_reference_definition / blank_lines / paragraph)
     { return Object.assign({}, block, { location: location() }) }
+
 container_block = 
     block:(code_block / blockquote)
     { return Object.assign({}, block, { location: location() }) }
+
 blank_lines = 
     '\n'+
     { return { type: 'blank_lines' } }
@@ -187,10 +189,6 @@ blockquote =
     value:blockquote_unit+
     { return { type: 'blockquote', children: value } }
 
-link_reference_url =
-    ('\n'[ ]* / [ ]*) url:[^\n" \(\)]+
-    { return url.join('') }
-
 link_reference_title = 
     ('\n'[ ]* / [ ]+) '"' title:(special_character / [^"])+ '"'
     { return title.join('') }
@@ -200,8 +198,16 @@ link_reference_name =
     { return name.join('') }
 
 link_reference_definition = 
-    leading_indent '[' name:link_reference_name ']:' url:link_reference_url title:link_reference_title? separator
-    { return defineLinkReference(name, { type: "link_reference_definition", name: name, url: url, title: title }) }
+    leading_indent '[' name:link_reference_name ']:' '\n'?space* url:url title:link_reference_title? separator
+    { 
+        return defineLinkReference(name, { 
+            type: "link_reference_definition", 
+            name: name, 
+            url: url.content, 
+            title: title,
+            children: [url]
+        }) 
+    }
 
 list = 
     first:list_item 
@@ -271,10 +277,10 @@ html_entity =
 text_without_backslash = 
     (backslash_escape / html_entity / [^\n`])+
 
-character_without_inline_indicator = special_character / [^\n`*_~\\\[!]
+character_without_inline_indicator = special_character / [^\n`*_~\\\[!<]
 
 inline_indicator = 
-    char:[`*_~\\\[!]
+    char:[`*_~\\\[!<]
     { return { type: 'text', content: char } } 
 
 text_without_inline_indicator = 
@@ -314,17 +320,40 @@ strikethrough =
 inline_link = 
     link / link_reference / autolink
 
+url =  
+    ('https' / 'http' / 'ftp') '://' [a-zA-Z0-9&%=?#./]+
+    { return { type: 'url', content: text(), location: location() } }
+
 autolink = 
-    '<' [ ]* url:('http' 's'? '://' [a-zA-Z0-9&%=?#./]+) [ ]* '>'
-    { return { type: 'link', url: deepJoin(url, ''), name: deepJoin(url, ''), title: deepJoin(url, '') } }
+    '<' space* url:url space* '>'
+    { 
+        return {
+            type: 'link', 
+            url: url.content, 
+            name: url.content, 
+            title: '',
+            children: [url]
+        }
+    }
 
 link =
-    '[' name:(special_character / [^\n\]\[])+ '](' space* url:[^\n" \(\)]+ title:(space+ '"' t:(special_character / [^\n\"])+ '"' { return t })? space* ')'
-    { return { type: 'link', name: name.join(''), url: url.join(''), title: title ? title.join('') : name.join('') } }
+    '[' name:(special_character / [^\n\]\[])+ '](' space* url:url title:(space+ '"' t:(special_character / [^\n\"])+ '"' { return t })? space* ')'
+    { 
+        return { 
+            type: 'link', 
+            name: name.join(''), 
+            url: url.content, 
+            title: title ? title.join('') : name.join(''),
+            children: [url]
+        } 
+    }
 
 link_reference = 
     '[' name:(special_character / [^\n\]\[])+ ']'  &{ return findLinkReference(name.join('')) != null } 
-    { var ref = findLinkReference(name.join('')); return Object.assign({}, ref, { type: 'link' }) }
+    {
+        var ref = findLinkReference(name.join('')); 
+        return Object.assign({}, ref, { type: 'link' }) 
+    }
 
 image = 
     '![' name:(special_character / [^\n\]\[])+ '](' space* url:[^\n" \(\)]+ title:(space+ '"' t:(special_character / [^\n\"])+ '"' { return t })? space* ')'

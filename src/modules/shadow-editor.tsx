@@ -5,6 +5,7 @@ import Caret from 'base/caret'
 import classNames from 'classnames'
 
 const LINE_HEIGHT = 22
+const PADDING = 14 
 
 interface Point {
     offset: number
@@ -17,7 +18,7 @@ interface Location {
     end: Point
 }
 
-const cursorSplitElement = (selectionRange, captureCursorClick, source, location) => {
+const cursorSplitElement = (selectionRange, source, location) => {
     const sStart = selectionRange[0]
     const sEnd = selectionRange[1]
     const iStart = location.start.offset
@@ -37,14 +38,14 @@ const cursorSplitElement = (selectionRange, captureCursorClick, source, location
 
         innerView = [
             <span
-                key='0' onClick={captureCursorClick}
+                key='0'
                 data-range={[iStart, leftCut]}
             >
                 {source.slice(iStart, leftCut)}
             </span>,
             <span
                 key='1' className='selected'
-                onClick={captureCursorClick} data-range={[leftCut, rightCut]}
+                data-range={[leftCut, rightCut]}
             >
                 {
                     isCollapsed ?
@@ -53,7 +54,7 @@ const cursorSplitElement = (selectionRange, captureCursorClick, source, location
                 }
             </span>,
             <span
-                key='2' onClick={captureCursorClick}
+                key='2'
                 data-range={[rightCut, iEnd]}
             >
                 {source.slice(rightCut, iEnd)}
@@ -64,63 +65,74 @@ const cursorSplitElement = (selectionRange, captureCursorClick, source, location
 }
 
 
-const leafElement = (selectionRange, captureCursorClick, source, leaf, index) => {
-    return (
-        <span
-            className={leaf.type} 
-            key={index}
-            data-range={[leaf.location.start.offset, leaf.location.end.offset]}
-            onClick={captureCursorClick}
-        >
-            {cursorSplitElement(selectionRange, captureCursorClick, source, leaf.location)}
-        </span>
-    )
+const leafElement = (selectionRange, source, leaf, index) => {
+    switch (leaf.type) {
+        case 'link':
+            return (
+                <span
+                    className={leaf.type}
+                    key={index}
+                >
+                    {prefixElement(source, leaf, selectionRange)}
+                    {leafElement(selectionRange, source, leaf.children[0], index)}
+                    {suffixElement(source, leaf, selectionRange)}
+                </span>
+            )
+        default:
+            return (
+                <span
+                    className={leaf.type}
+                    key={index}
+                    data-range={[leaf.location.start.offset, leaf.location.end.offset]}
+                >
+                    {cursorSplitElement(selectionRange, source, leaf.location)}
+                </span>
+            )
+    }
 }
 
-const prefixElement = (source, block, captureCursorClick, selectionRange) => {
+const prefixElement = (source, block, selectionRange) => {
     let start = block.children[0].location.start.offset 
     let _start = block.location.start.offset
     return (
         <span 
             className={`${block.type}-prefix`} 
             key='prefix'
-            onClick={captureCursorClick}
             data-range={[_start, start]}
         >
-            {cursorSplitElement(selectionRange, captureCursorClick, source, { start: { offset: _start }, end: { offset: start } })}
+            {cursorSplitElement(selectionRange, source, { start: { offset: _start }, end: { offset: start } })}
         </span>
     )
 }
 
-const suffixElement = (source, block, captureCursorClick, selectionRange) => {
+const suffixElement = (source, block, selectionRange) => {
     let end = block.children[block.children.length - 1].location.end.offset
     let _end = block.location.end.offset
     return (
         <span 
             className={`${block.type}-suffix`} 
             key='suffix' 
-            onClick={captureCursorClick}
             data-range={[end, _end]}
         >
-            {cursorSplitElement(selectionRange, captureCursorClick, source, { start: { offset: end }, end: { offset: _end } })}
+            {cursorSplitElement(selectionRange, source, { start: { offset: end }, end: { offset: _end } })}
         </span>
     )
 }
 
-const block2ReactElement = (selectionRange, captureCursorClick, source, block: Block, index) => {
+const block2ReactElement = (selectionRange, source, block: Block, index) => {
     switch (block.type) {
         case 'blockquote':
             return (
                 <span key={index} className={block.type}>
-                    {block.children.map(block2ReactElement.bind({}, selectionRange, captureCursorClick, source)) }
+                    {block.children.map(block2ReactElement.bind({}, selectionRange, source)) }
                 </span>
             )
         case 'blockquote_unit':
             return (
                 <span key={index} className={block.type}>
-                    {prefixElement(source, block, captureCursorClick, selectionRange)}
-                    {block.children.map(block2ReactElement.bind({}, selectionRange, captureCursorClick, source))}
-                    {suffixElement(source, block, captureCursorClick, selectionRange)}
+                    {prefixElement(source, block, selectionRange)}
+                    {block.children.map(block2ReactElement.bind({}, selectionRange, source))}
+                    {suffixElement(source, block, selectionRange)}
                 </span>
             )
         case 'paragraph':
@@ -128,30 +140,29 @@ const block2ReactElement = (selectionRange, captureCursorClick, source, block: B
         case 'list_item':
             return (
                 <span key={index} className={block.type}>
-                    {prefixElement(source, block, captureCursorClick, selectionRange)}
-                    {block.children.map(leafElement.bind({}, selectionRange, captureCursorClick, source))}
-                    {suffixElement(source, block, captureCursorClick, selectionRange)}
+                    {prefixElement(source, block, selectionRange)}
+                    {block.children.map(leafElement.bind({}, selectionRange, source))}
+                    {suffixElement(source, block, selectionRange)}
                 </span>
             )
-        case 'link_reference_definition':
         case 'thematic_break':
         case 'blank_lines':
-            return leafElement(selectionRange, captureCursorClick, source, block, index)
+            return leafElement(selectionRange, source, block, index)
         case 'code_block':
+        case 'link_reference_definition':
             return (
                 <span 
-                    key={index} className={block.type} 
-                    data-range={[block.location.start.offset, block.location.end.offset]}
+                    key={index} className={block.type}
                 >
-                    {prefixElement(source, block, captureCursorClick, selectionRange)}
-                    {leafElement(selectionRange, captureCursorClick, source, block.children[0], index)}
-                    {suffixElement(source, block, captureCursorClick, selectionRange)}
+                    {prefixElement(source, block, selectionRange)}
+                    {leafElement(selectionRange, source, block.children[0], index)}
+                    {suffixElement(source, block, selectionRange)}
                 </span>
             )
         case 'list':
             return (
                 <span key={index} className={block.type}>
-                    {block.children.map(block2ReactElement.bind({}, selectionRange, captureCursorClick, source))}
+                    {block.children.map(block2ReactElement.bind({}, selectionRange, source))}
                 </span>
             )
         default:
@@ -159,58 +170,30 @@ const block2ReactElement = (selectionRange, captureCursorClick, source, block: B
     }  
 }
 
-const ast2ReactElement = (source: string, ast: Block[], captureCursorClick, selectionRange) => {
-    return ast.map(block2ReactElement.bind({}, selectionRange, captureCursorClick, source))
+const ast2ReactElement = (source: string, ast: Block[], selectionRange) => {
+    return ast.map(block2ReactElement.bind({}, selectionRange, source))
 }
-
 
 interface Props {
     ast: MAST, 
     onCursorChange: Function,
-    selectionRange: [number, number]
+    selectionRange: [number, number],
+    focused: boolean
 }
 
 interface State {
-    isCursorSleep: boolean,
-    isFocused: boolean
+    isCursorSleep: boolean
 }
 
 class ShadowEditor extends React.Component<Props, State> {
     constructor (props) {
         super(props)
         this.state = {
-            isCursorSleep: true,
-            isFocused: false
+            isCursorSleep: true
         }
         let self = this as any 
         self.cursorSleepTimeout = null 
         self.previousReceivedCursorRange = this.props.selectionRange
-    }
-
-    captureCursorClick (e) {
-        const range = Caret.getRange()
-
-        const startContainer = range.startContainer.parentElement
-        const endContainer = range.endContainer.parentElement
-
-        const baseStartOffset = parseInt(startContainer.getAttribute('data-range').split(',')[0])
-        const baseEndOffset = parseInt(endContainer.getAttribute('data-range').split(',')[0])
-
-        let cursorRange = [baseStartOffset + range.startOffset, baseEndOffset + range.endOffset]
-        const prevRange = (this as any).previousReceivedCursorRange
-
-        //shift点击选中适配
-        if (e.shiftKey) {
-            cursorRange = [Math.min(cursorRange[0], prevRange[0]), Math.max(cursorRange[1], prevRange[1])]
-        }
-        
-        this.props.onCursorChange(cursorRange)
-        
-        let self = this as any
-        self.previousReceivedCursorRange = cursorRange
-        
-        e.stopPropagation()
-        e.preventDefault()
     }
 
     componentWillReceiveProps (nextProps) {
@@ -223,44 +206,56 @@ class ShadowEditor extends React.Component<Props, State> {
         }
     }
 
-    setCursorByClick (e) {
-        const pre = this.refs['pre'] as any
-        const source = this.props.ast.source
-        const rect = pre.getBoundingClientRect()
-        const rows = source.split('\n')
+    setCursorByClickTextContent (e) {
+        const range = Caret.getRange()
 
-        let row = (e.pageY - rect.top) / LINE_HEIGHT 
-        row = row > 0 ? Math.ceil(row) : 1
-        row = row > rows.length ? rows.length : row
+        const startContainer = range.startContainer.parentElement
+        const endContainer = range.endContainer.parentElement
 
-        const toStart = e.pageX < rect.left
+        const sRang = startContainer.getAttribute('data-range')
+        const eRange = endContainer.getAttribute('data-range')
 
-        const end = rows.slice(0, row).join('\n').length 
-        const start = end - rows[row - 1].length
+        if (sRang && eRange) {
+            const baseStartOffset = parseInt(sRang.split(',')[0])
+            const baseEndOffset = parseInt(eRange.split(',')[0])
 
-        const pos = toStart ? start : end
+            let cursorRange = [baseStartOffset + range.startOffset, baseEndOffset + range.endOffset]
+            const prevRange = (this as any).previousReceivedCursorRange
 
-        this.props.onCursorChange([pos, pos])
-    } 
+            //shift点击选中适配
+            if (e.shiftKey) {
+                cursorRange = [Math.min(cursorRange[0], prevRange[0]), Math.max(cursorRange[1], prevRange[1])]
+            }
+
+            this.props.onCursorChange(cursorRange)
+
+            let self = this as any
+            self.previousReceivedCursorRange = cursorRange
+        }
+
+        e.stopPropagation()
+        e.preventDefault()
+    }
 
     render () {
+
         let view = ast2ReactElement(
             this.props.ast.source, 
             this.props.ast.entities,
-            this.captureCursorClick.bind(this), 
             this.props.selectionRange
         )
         return (
-            <div className="shadow-editor" onClick={this.setCursorByClick.bind(this) }>
-                <pre 
-                    className={classNames([
-                        { 'cursor-sleep': this.state.isCursorSleep},
-                        {'focused': this.state.isFocused}
-                    ])}
-                    ref="pre"
+            <div 
+                onClick={this.setCursorByClickTextContent.bind(this)}
+
+                className={classNames([
+                    'shadow-editor',
+                    { 'cursor-sleep': this.state.isCursorSleep},
+                    {'focused': this.props.focused}
+                ])}
+                ref="pre"
                 >
                 {view}
-                </pre>
             </div>
         )
     }
