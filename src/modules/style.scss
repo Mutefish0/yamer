@@ -65,7 +65,8 @@
             color: #333;
             box-sizing: border-box;
             overflow-y: auto;
-            white-space: pre; 
+            white-space: pre-wrap;
+            word-wrap: break-word; 
             cursor: text;
             @include github;
             
