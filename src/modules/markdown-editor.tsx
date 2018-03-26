@@ -10,12 +10,14 @@ interface Props {
     onCursorChange: (range) => any,
     onFocusChange: (focused: boolean) => any
     cursorSource: Subject<[number, number]>
+    reactionSource: Subject<any>
 }
 
 class MarkdownEditor extends React.Component<Props> {
 
-    handleInput (e) {
-        const text = e.target.value || ' '
+    handleInput () {
+        let target = this.refs['editor'] as any 
+        const text = target.value || ' '
         const ast = MarkdownParser.parse(text) 
         this.props.onAstChange(ast)
     }
@@ -25,7 +27,7 @@ class MarkdownEditor extends React.Component<Props> {
             let cursorOffset = e.target.selectionStart
             let value = e.target.value 
             e.target.value = `${value.slice(0, cursorOffset)}  ${value.slice(cursorOffset)}`
-            this.handleInput(e) 
+            this.handleInput() 
             e.target.setSelectionRange(cursorOffset + 2, cursorOffset + 2);
             e.preventDefault()
         }
@@ -57,6 +59,22 @@ class MarkdownEditor extends React.Component<Props> {
         })
 
         diffSource.subscribe(range => this.props.onCursorChange(range))
+
+        this.props.reactionSource.subscribe(action => {
+            switch (action.type) {
+                case 'click_checkbox':
+                    const target = this.refs['editor'] as any 
+                    const value = target.value
+                    const node = action.node
+                    const isChecked = node.checked
+                    const reactLocation = node.reactLocation
+                    const start = reactLocation.start.offset
+                    const end = reactLocation.end.offset
+                    target.value = `${value.slice(0, start)}${isChecked ? ' ' : 'x'}${value.slice(end)}`
+                    this.handleInput()
+                default:                
+            }
+        })
     }
 
     componentWillUnmount () {

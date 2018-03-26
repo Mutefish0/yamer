@@ -91,16 +91,33 @@ const leafElement = (selectionRange, source, leaf, index) => {
     }
 }
 
+const reactElement = (source, selectionRange, location, reactLocation) => {
+    const start = location.start.offset
+    const end = location.end.offset
+    const rStart = reactLocation.start.offset
+    const rEnd = reactLocation.end.offset
+
+    return [
+        <span key="0" data-range={[start, rStart]}>{cursorSplitElement (selectionRange, source, { start: { offset: start }, end: { offset: rStart } })}</span>,
+        <span key="1" className="reaction" data-range={[rStart, rEnd]}>{cursorSplitElement(selectionRange, source, { start: { offset: rStart }, end: { offset: rEnd } })}</span>,
+        <span key="2" data-range={[rEnd, end]}>{cursorSplitElement(selectionRange, source, { start: { offset: rEnd }, end: { offset: end } })}</span>
+    ]
+}
+
 const prefixElement = (source, block, selectionRange) => {
     let start = block.children[0].location.start.offset 
     let _start = block.location.start.offset
+    let fakeLocation = { start: { offset: _start }, end: { offset: start } }
     return (
         <span 
             className={`${block.type}-prefix`} 
             key='prefix'
             data-range={[_start, start]}
         >
-            {cursorSplitElement(selectionRange, source, { start: { offset: _start }, end: { offset: start } })}
+            {
+                block.reactLocation ? reactElement(source, selectionRange, fakeLocation, block.reactLocation)
+                    : cursorSplitElement(selectionRange, source, fakeLocation)
+            }
         </span>
     )
 }
@@ -138,6 +155,7 @@ const block2ReactElement = (selectionRange, source, block: Block, index) => {
         case 'paragraph':
         case 'heading':
         case 'list_item':
+        case 'list_task_item':
             return (
                 <span key={index} className={block.type}>
                     {prefixElement(source, block, selectionRange)}

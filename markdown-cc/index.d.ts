@@ -58,6 +58,7 @@ type LeafBlock =
     | BlankLines
     | List 
     | ListItem
+    | ListTaskItem
 
 interface Paragraph {
     type: 'paragraph'
@@ -112,6 +113,14 @@ interface List {
 
 interface ListItem {
     type: 'list_item'
+    children: Inline[]
+    location: Location
+}
+
+interface ListTaskItem {
+    type: 'list_task_item'
+    checked: boolean
+    reactLocation: Location
     children: Inline[]
     location: Location
 }

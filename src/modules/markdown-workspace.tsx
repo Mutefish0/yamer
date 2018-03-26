@@ -12,6 +12,9 @@ interface State {
 }
 
 class MarkdownWorkspace extends React.Component<{}, State> {
+    private shadowEditorSource: Subject<any>
+    private minimapReactionSource: Subject<any>
+
     constructor (props) {
         super(props)
         this.state = {
@@ -19,9 +22,8 @@ class MarkdownWorkspace extends React.Component<{}, State> {
             selectionRange: [0, 0],
             editorFocused: false 
         }
-        
-        let self = this as any
-        self.shadowEditorSource = new Subject()
+        this.shadowEditorSource = new Subject()
+        this.minimapReactionSource = new Subject()
     }
 
     handleAstChange (ast) {
@@ -29,7 +31,11 @@ class MarkdownWorkspace extends React.Component<{}, State> {
     }
 
     handleShadownEditorCursorChange (cursor) {
-        (this as any).shadowEditorSource.next(cursor)
+        this.shadowEditorSource.next(cursor)
+    }
+
+    handleMinimapReaction (action) {
+        this.minimapReactionSource.next(action)
     }
 
     render () {
@@ -41,9 +47,13 @@ class MarkdownWorkspace extends React.Component<{}, State> {
                         onAstChange={this.handleAstChange.bind(this)} 
                         onCursorChange={selectionRange => this.setState({ selectionRange })}
                         onFocusChange={(focused) => this.setState({ editorFocused: focused })}
-                        cursorSource={(this as any).shadowEditorSource}
+                        cursorSource={this.shadowEditorSource}
+                        reactionSource={this.minimapReactionSource}
                     />
-                    <MarkdownMinimap ast={this.state.ast}  />
+                    <MarkdownMinimap 
+                        ast={this.state.ast}
+                        onReact={this.handleMinimapReaction.bind(this)}
+                    />
                     <MarkdownShadowEditor 
                         focused={this.state.editorFocused}
                         selectionRange={this.state.selectionRange}

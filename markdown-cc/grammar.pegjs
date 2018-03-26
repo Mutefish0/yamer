@@ -210,9 +210,9 @@ link_reference_definition =
     }
 
 list = 
-    first:list_item 
+    first:(list_task_item / list_item)
     rest:(
-        (l:list_item &{ return l.leading == first.leading } { return l }) /
+        (l:(list_task_item / list_item) &{ return l.leading == first.leading } { return l }) /
         (l:list_level2 &{ return l.leading > first.leading } { return l })
     )*
     { return { type: 'list',  leading: first.leading, children: [first].concat(rest)} }
@@ -220,9 +220,13 @@ list =
 list_item = leading:space* [*-]collapsed_whitespace value:(inline / ([\n]!([\n] / list_item) { return { type: 'hard_break', location: location() } }))+ separator
     { return { type: 'list_item', leading: computeSpaceCount(leading.join('')), children: value, location: location() } }
 
+list_task_item = 
+    leading:space* [*-] space '[' check:((space / 'x') { return { checked: text() == 'x', location: location() } }) ']' space value:(inline / ([\n]!([\n] / list_item) { return { type: 'hard_break', location: location() } }))+ separator
+    { return { type: 'list_task_item', checked: check.checked, reactLocation: check.location, leading: computeSpaceCount(leading.join('')), children: value, location: location() } }
+
 list_level2 = 
-    first:list_item 
-    rest:(l:list_item &{ return l.leading == first.leading } { return l })*
+    first:(list_task_item / list_item)
+    rest:(l:(list_task_item / list_item) &{ return l.leading == first.leading } { return l })*
     { return { type: 'list',  leading: first.leading, children: [first].concat(rest)} }
 
 block_exclude_paragraph = 

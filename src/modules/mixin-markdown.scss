@@ -82,6 +82,14 @@
             list-style-type: circle; 
         }
     }
+    li {
+        position: relative;
+        input[type=checkbox] {
+            position: absolute;
+            top: 6px;
+            left: -20px;
+        }
+    }
     del {
         color: rgba(44, 63, 81, 0.63);
     }

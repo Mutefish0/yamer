@@ -93,8 +93,14 @@
 
             .blockquote_unit-prefix, 
             .list_item-prefix,
-            .heading-prefix {
+            .list_task_item-prefix,
+            .heading-prefix
+             {
                 color: #6a737d;
+            }
+
+            .reaction {
+                color: indianred;
             }
 
             // inline

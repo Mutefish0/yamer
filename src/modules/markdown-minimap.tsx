@@ -40,12 +40,12 @@ const inlien2ReactElement = (inline: Inline, index) => {
     }
 }
 
-const block2ReactElement = (block: Block, index) => {
+const block2ReactElement = function (block: Block, index) {
     switch (block.type) {
         case 'blockquote':
-            return React.createElement('blockquote', { key: index }, block.children.map(block2ReactElement))
+            return React.createElement('blockquote', { key: index }, block.children.map(block2ReactElement.bind(this)))
         case 'blockquote_unit':
-            return block.children.map(block2ReactElement)
+            return block.children.map(block2ReactElement.bind(this))
         case 'paragraph':
             return React.createElement('p', { key: index }, block.children.map(inlien2ReactElement))
         case 'heading':
@@ -64,8 +64,20 @@ const block2ReactElement = (block: Block, index) => {
             return React.createElement('pre', { key: index }, code) 
         case 'list_item':
             return React.createElement('li', { key: index }, block.children.map(inlien2ReactElement))
+        case 'list_task_item':
+            return (
+                <li key={index}>
+                    <input 
+                        key="-1"
+                        checked={block.checked} type="checkbox" 
+                        onClick={() => this.props.onReact({ type: 'click_checkbox', node: block })}
+                        readOnly
+                    />
+                    {block.children.map(inlien2ReactElement)}
+                </li>
+            )
         case 'list':
-            return React.createElement('ul', { key: index }, block.children.map(block2ReactElement))
+            return React.createElement('ul', { key: index }, block.children.map(block2ReactElement.bind(this)))
         case 'link_reference_definition':
         case 'blank_lines':
         default: 
@@ -73,15 +85,19 @@ const block2ReactElement = (block: Block, index) => {
     }   
 }
 
-const ast2ReactElement = (ast: Block[]) => {
-    return ast.map(block2ReactElement)
+const ast2ReactElement = function (ast: Block[]) {
+    return ast.map(block2ReactElement.bind(this))
 }
 
 
+interface Props {
+    ast: MAST,
+    onReact: Function
+}
 
-class MarkdownMinimap extends React.Component<{ ast: MAST }> {
+class MarkdownMinimap extends React.Component<Props> {
     render () {
-        let view = ast2ReactElement(this.props.ast.entities)
+        let view = ast2ReactElement.bind(this)(this.props.ast.entities)
         return (
             <div className="minimap" contentEditable={false}>
                 {view}
