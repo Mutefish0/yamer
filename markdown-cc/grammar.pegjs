@@ -163,7 +163,7 @@ thematic_break =
     { return { type: 'thematic_break' } }
 
 language = 
-    lan:('md'/ 'markdown'/ 'diff' / 'js' / 'javascript' / 'coffescript' / 'ts' / 'typescript' / 'html' / 'css' / 'ruby' / 'python' / 'java'  / 'go' /  'erlang' / 'c' / 'c++' / 'c#' / 'objective-c' / 'php' / 'swift' / 'r' / 'matlab')?
+    lan:('bash' / 'md'/ 'markdown'/ 'diff' / 'js' / 'javascript' / 'coffescript' / 'ts' / 'typescript' / 'html' / 'css' / 'ruby' / 'python' / 'java'  / 'go' /  'erlang' / 'c' / 'c++' / 'c#' / 'objective-c' / 'php' / 'swift' / 'r' / 'matlab')?
     { return languageAbbrTransform(lan) }
 
 code_block = 
@@ -325,7 +325,7 @@ inline_link =
     link / link_reference / autolink
 
 url =  
-    ('https' / 'http' / 'ftp') '://' [a-zA-Z0-9&%=?#./]+
+    ('https' / 'http' / 'ftp') '://' [a-zA-Z0-9\-&%=?#./]+
     { return { type: 'url', content: text(), location: location() } }
 
 autolink = 
