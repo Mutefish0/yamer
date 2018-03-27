@@ -84,10 +84,21 @@
     }
     li {
         position: relative;
-        input[type=checkbox] {
+        &.task {
+            list-style: none;
+        }
+        i.checkbox {
             position: absolute;
-            top: 6px;
-            left: -20px;
+            left: -28px;
+            top: 0;
+            width: 26px;
+            height: 26px;
+            background-image: url('assets/checkbox.svg');
+            background-size: 100%;
+            cursor: pointer;
+            &.checked {
+                background-image: url('assets/checkbox-active.svg');
+            }
         }
     }
     del {

@@ -1,6 +1,7 @@
 import React from 'react'
 import { MAST, Block, Inline } from 'libs/markdown'
 import hljs from 'highlight.js'
+import classNames from 'classnames'
 
 /**
  * @TODO 用JSX来改造，更直观
@@ -66,12 +67,11 @@ const block2ReactElement = function (block: Block, index) {
             return React.createElement('li', { key: index }, block.children.map(inlien2ReactElement))
         case 'list_task_item':
             return (
-                <li key={index}>
-                    <input 
+                <li key={index} className="task">
+                    <i 
                         key="-1"
-                        checked={block.checked} type="checkbox" 
+                        className={classNames(['checkbox', {'checked': block.checked}]) }
                         onClick={() => this.props.onReact({ type: 'click_checkbox', node: block })}
-                        readOnly
                     />
                     {block.children.map(inlien2ReactElement)}
                 </li>
