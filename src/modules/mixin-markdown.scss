@@ -44,26 +44,20 @@
         color: #364B60;
         font-weight: bold;
         line-height: 1.2;
+        margin-top: 22px;
+        margin-bottom: 16px;
     }
 
     h1 {
-        margin-top: 34px;
-        margin-bottom: 17px;
-        font-size: 34px;
-    }
-    h2 {
-        margin-top: 26px;
-        margin-bottom: 13px;
         font-size: 26px;
     }
+    h2 {
+        font-size: 22px;
+    }
     h3 {
-        margin-top: 18px;
-        margin-bottom: 9px;
         font-size: 18px;
     }
     h4, h5, h6 {
-        margin-top: 16px;
-        margin-bottom: 8px;
         font-size: 16px;
     }
     p {
@@ -80,6 +74,7 @@
         padding-left: 38px; 
         ul {
             list-style-type: circle; 
+            margin: 0;
         }
     }
     li {
