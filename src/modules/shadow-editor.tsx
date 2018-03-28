@@ -269,7 +269,7 @@ class ShadowEditor extends React.Component<Props, State> {
                 className={classNames([
                     'shadow-editor',
                     { 'cursor-sleep': this.state.isCursorSleep},
-                    {'focused': this.props.focused}
+                    {'focused': this.props.focused }
                 ])}
                 ref="pre"
                 >
