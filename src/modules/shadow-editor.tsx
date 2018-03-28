@@ -36,30 +36,36 @@ const cursorSplitElement = (selectionRange, source, location) => {
         const rightCut = Math.min(sEnd, iEnd)
         const isCollapsed = leftCut == rightCut
 
-        innerView = [
-            <span
-                key='0'
-                data-range={[iStart, leftCut]}
-            >
-                {source.slice(iStart, leftCut)}
-            </span>,
-            <span
-                key='1' className='selected'
-                data-range={[leftCut, rightCut]}
-            >
-                {
-                    isCollapsed ?
-                        <span className='cursor'></span>
-                        : source.slice(leftCut, rightCut)
-                }
-            </span>,
-            <span
-                key='2'
-                data-range={[rightCut, iEnd]}
-            >
-                {source.slice(rightCut, iEnd)}
-            </span>
-        ]
+        if (!isCollapsed) {
+            innerView = [
+                <span
+                    key='0'
+                    data-range={[iStart, leftCut]}
+                >
+                    {source.slice(iStart, leftCut)}
+                </span>,
+                <span
+                    key='1' className='selected'
+                    data-range={[leftCut, rightCut]}
+                >
+                    {
+                        source.slice(leftCut, rightCut)
+                    }
+                </span>,
+                <span
+                    key='2'
+                    data-range={[rightCut, iEnd]}
+                >
+                    {source.slice(rightCut, iEnd)}
+                </span>
+            ]
+        } else {
+            innerView = (
+                <span data-max={source.length} data-range={[iStart, iEnd]} data-cursor-offset={leftCut - iStart}>
+                    {source.slice(iStart, iEnd)}
+                </span>
+            )
+        }
     }
     return innerView 
 }
@@ -108,6 +114,7 @@ const prefixElement = (source, block, selectionRange) => {
     let start = block.children[0].location.start.offset 
     let _start = block.location.start.offset
     let fakeLocation = { start: { offset: _start }, end: { offset: start } }
+    if (start == _start) return undefined;
     return (
         <span 
             className={`${block.type}-prefix`} 
@@ -125,6 +132,7 @@ const prefixElement = (source, block, selectionRange) => {
 const suffixElement = (source, block, selectionRange) => {
     let end = block.children[block.children.length - 1].location.end.offset
     let _end = block.location.end.offset
+    if (end == _end) return undefined;
     return (
         <span 
             className={`${block.type}-suffix`} 
@@ -204,14 +212,16 @@ interface State {
 }
 
 class ShadowEditor extends React.Component<Props, State> {
+    private cursorSleepTimeout
+    private previousReceivedCursorRange
+
     constructor (props) {
         super(props)
         this.state = {
             isCursorSleep: true
         }
-        let self = this as any 
-        self.cursorSleepTimeout = null 
-        self.previousReceivedCursorRange = this.props.selectionRange
+        this.cursorSleepTimeout = null 
+        this.previousReceivedCursorRange = this.props.selectionRange
     }
 
     componentWillReceiveProps (nextProps) {
@@ -219,7 +229,7 @@ class ShadowEditor extends React.Component<Props, State> {
         const range = this.props.selectionRange
         if (newRange[0] != range[0] || newRange[1] != range[1]) {
             this.setState({isCursorSleep: false})
-            clearTimeout((this as any).cursorSleepTimeout)
+            clearTimeout(this.cursorSleepTimeout)
             setTimeout(() => this.setState({isCursorSleep: true }), 800)
         }
     }
@@ -238,7 +248,7 @@ class ShadowEditor extends React.Component<Props, State> {
             const baseEndOffset = parseInt(eRange.split(',')[0])
 
             let cursorRange = [baseStartOffset + range.startOffset, baseEndOffset + range.endOffset]
-            const prevRange = (this as any).previousReceivedCursorRange
+            const prevRange = this.previousReceivedCursorRange
 
             //shift点击选中适配
             if (e.shiftKey) {
@@ -246,13 +256,37 @@ class ShadowEditor extends React.Component<Props, State> {
             }
 
             this.props.onCursorChange(cursorRange)
-
-            let self = this as any
-            self.previousReceivedCursorRange = cursorRange
+            this.previousReceivedCursorRange = cursorRange
         }
 
         e.stopPropagation()
         e.preventDefault()
+    }
+
+    componentDidUpdate () {
+        const cursorHost = document.querySelector('span[data-cursor-offset]') as any
+        const cursor = this.refs['cursor'] as any
+        if (cursorHost) {
+            const textHost = cursorHost.childNodes[0]
+            if (textHost) {
+                const baseOffset = cursorHost.getAttribute('data-range').split(',')[0]
+                const offset = cursorHost.getAttribute('data-cursor-offset')
+                const prevCharOffset = parseInt(baseOffset) + parseInt(offset);
+                const range = document.createRange()
+                range.setStart(textHost, offset)
+                range.setEnd(textHost, offset)
+                var rect = range.getBoundingClientRect()
+                const prevChar = this.props.ast.source.slice(prevCharOffset - 1, prevCharOffset)
+                // 如果前一个字符为'\n'则换行
+                if (prevChar == '\n') {
+                    cursor.style.left = PADDING + 'px'
+                    cursor.style.top = rect.top + LINE_HEIGHT + 'px'
+                } else {
+                    cursor.style.left = rect.left + 'px'
+                    cursor.style.top = rect.top + 'px'
+                }
+            }
+        }
     }
 
     render () {
@@ -274,6 +308,7 @@ class ShadowEditor extends React.Component<Props, State> {
                 ref="pre"
                 >
                 {view}
+                <i className="cursor" ref="cursor"/>
             </div>
         )
     }

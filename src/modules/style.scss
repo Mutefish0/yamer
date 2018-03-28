@@ -67,6 +67,7 @@
             overflow-y: auto;
             white-space: pre-wrap;
             word-wrap: break-word; 
+            word-break: break-all;
             cursor: text;
             @include github;
             
@@ -122,16 +123,6 @@
                 background: indianred;
                 position: relative;
                 color: #fff;
-                .cursor {
-                    background: indianred;
-                    position: absolute;
-                    width: 1px;
-                    height: 18px;
-                    top: 0px;
-                    left: -0.5px;
-                    font-weight: normal;
-                    font-style: normal;
-                }
             }
             ::selection {
                 color: #fff;
@@ -142,6 +133,19 @@
                 .cursor {
                     animation: flash 1s infinite;
                 }
+            }
+
+            .cursor {
+                display: none;
+                background: indianred;
+                position: fixed;
+                width: 1px;
+                height: 18px;
+                font-weight: normal;
+                font-style: normal;
+            }
+            &.focused .cursor {
+                display: inline-block;
             }
         }
     }
