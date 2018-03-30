@@ -194,18 +194,17 @@ link_reference_title =
     { return title.join('') }
 
 link_reference_name = 
-    name:(special_character / [^\n\]\[])+
-    { return name.join('') }
+    (special_character / [^\n\]\[])+
+    { return { type: 'text', content: text(), location: location() } }
 
 link_reference_definition = 
-    leading_indent '[' name:link_reference_name ']:' '\n'?space* url:url title:link_reference_title? separator
+    leading_indent '[' name:link_reference_name ']:' space*'\n'?space* url:url title:link_reference_title? separator
     { 
-        return defineLinkReference(name, { 
+        return defineLinkReference(name.content, { 
             type: "link_reference_definition", 
-            name: name, 
             url: url.content, 
             title: title,
-            children: [url]
+            children: [name]
         }) 
     }
 
@@ -325,8 +324,8 @@ inline_link =
     link / link_reference / autolink
 
 url =  
-    ('https' / 'http' / 'ftp') '://' [a-zA-Z0-9\-&%=?#./]+
-    { return { type: 'url', content: text(), location: location() } }
+    ('https' / 'http' / 'ftp') '://' [a-zA-Z0-9\-_&%=?#./]+
+    { return { type: 'text', content: text(), location: location() } }
 
 autolink = 
     '<' space* url:url space* '>'
@@ -334,28 +333,34 @@ autolink =
         return {
             type: 'link', 
             url: url.content, 
-            name: url.content, 
             title: '',
             children: [url]
         }
     }
 
+link_child = 
+    inline:( 
+        image / strong_emphasis / strong / emphasis / strikethrough 
+        / ( [^\n`*_~\\\[\]!<]+ { return { type: 'text', content: text() } } )
+        / ([`*_~\\\[!<] { return { type: 'text', content: text() } })
+    )
+    { return Object.assign({}, inline, { location: location() }) }
+
 link =
-    '[' name:(special_character / [^\n\]\[])+ '](' space* url:url title:(space+ '"' t:(special_character / [^\n\"])+ '"' { return t })? space* ')'
+    '[' children:link_child+ '](' space* url:url title:(space+ '"' t:(special_character / [^\n\"])+ '"' { return t })? space* ')'
     { 
         return { 
             type: 'link', 
-            name: name.join(''), 
             url: url.content, 
-            title: title ? title.join('') : name.join(''),
-            children: [url]
+            title: title ? title.join('') : '',
+            children: children
         } 
     }
 
 link_reference = 
-    '[' name:(special_character / [^\n\]\[])+ ']'  &{ return findLinkReference(name.join('')) != null } 
+    '[' name:link_reference_name ']'  &{ return findLinkReference(name.content) != null } 
     {
-        var ref = findLinkReference(name.join('')); 
+        var ref = findLinkReference(name.content); 
         return Object.assign({}, ref, { type: 'link' }) 
     }
 

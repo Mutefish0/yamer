@@ -21,12 +21,11 @@ const inlien2ReactElement = (inline: Inline, index) => {
                 key: index
             })
         case 'link':
-            return React.createElement('a', {
-                href: inline.url,
-                title: inline.title,
-
-                key: index
-            }, inline.name)
+            return (
+                <a href={inline.url} title={inline.title} key={index}>
+                    {inline.children.map(inlien2ReactElement) }
+                </a>
+            )
         case 'strong_emphasis':
             let em = React.createElement('em', { key: index }, inline.content)
             return React.createElement('strong', { key: index }, em)

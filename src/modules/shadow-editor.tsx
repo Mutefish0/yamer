@@ -80,7 +80,9 @@ const leafElement = (selectionRange, source, leaf, index) => {
                     key={index}
                 >
                     {prefixElement(source, leaf, selectionRange)}
-                    {leafElement(selectionRange, source, leaf.children[0], index)}
+                    <span className="link-child">
+                        {leaf.children.map(leafElement.bind({}, selectionRange, source))}
+                    </span>
                     {suffixElement(source, leaf, selectionRange)}
                 </span>
             )

@@ -29,6 +29,8 @@ interface Inline {
     title?: string
 
     location: Location
+
+    children?: [Inline]
 }
 
 interface Text {
@@ -85,11 +87,6 @@ interface CodeBlock {
     location: Location
 }
 
-interface Url {
-    type: 'url',
-    content: string
-    location: Location
-}
 
 interface LinkReferenceDefinition {
     type: 'link_reference_definition'
@@ -97,7 +94,7 @@ interface LinkReferenceDefinition {
     url: string
     title?: string
     location: Location
-    children: [Url]
+    children: [Text]
 }
 
 interface BlankLines {
