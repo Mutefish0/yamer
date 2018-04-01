@@ -72,7 +72,6 @@
             @include github;
             
             .code_block {
-                color: #6a737d;
                 font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
             }
 
@@ -95,13 +94,15 @@
             .blockquote_unit-prefix, 
             .list_item-prefix,
             .list_task_item-prefix,
-            .heading-prefix
+            .heading-prefix,
+            .code_block-prefix,
+            .code_block-suffix
              {
                 color: #6a737d;
             }
 
-            .reaction {
-                color: indianred;
+            .list_task_item .reaction {
+                color: #d7dbe0;
             }
 
             // inline
@@ -115,7 +116,10 @@
                 font-style: italic;
                 font-weight: bold;
             }
-            .code {
+            .keyboard {
+                font-family: Menlo;
+            }
+            .code, .keyboard {
                 color: #6a737d;
             }
 

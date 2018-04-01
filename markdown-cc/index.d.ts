@@ -19,6 +19,7 @@ type InlineElement =
     | 'emphasis' 
     | 'strikethrough' 
     | 'text'
+    | 'keyboard'
 
 interface Inline {
     type: InlineElement

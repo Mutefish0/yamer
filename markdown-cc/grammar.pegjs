@@ -291,8 +291,12 @@ text_without_inline_indicator =
     { return { type: 'text', content: deepJoin(text, '') } } 
 
 inline = 
-    inline:(hard_break / code / image / inline_link / strong_emphasis / strong / emphasis / strikethrough / text_without_inline_indicator / inline_indicator)
+    inline:(hard_break / keyboard / code / image / inline_link / strong_emphasis / strong / emphasis / strikethrough / text_without_inline_indicator / inline_indicator)
     { return Object.assign({}, inline, { location: location() }) }
+
+keyboard = 
+    '`kbd' space+ code:(special_character / [^\n`] / collapsed_whitespace)+ '`'
+    { return { type: 'keyboard', content: trim(deepJoin(code, '') ) } }
 
 code = 
     '`' code:(special_character / [^\n`] / collapsed_whitespace)+ '`'

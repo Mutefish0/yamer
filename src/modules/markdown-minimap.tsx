@@ -10,16 +10,15 @@ import classNames from 'classnames'
 const inlien2ReactElement = (inline: Inline, index) => {
     switch (inline.type) {
         case 'hard_break':
-            return React.createElement('br', { key: index })
+            return <br key={index}/>
         case 'code':
-            return React.createElement('code', { key: index }, inline.content)
+            return <code key={index}>{inline.content}</code>
+        case 'keyboard':
+            return <kbd key={index}>{inline.content}</kbd>
         case 'image':
-            return React.createElement('img', { 
-                src: inline.url,   
-                title: inline.title,
-
-                key: index
-            })
+            return (
+                <img key={index} src={inline.url} alt={inline.title} title={inline.title} />
+            )
         case 'link':
             return (
                 <a href={inline.url} title={inline.title} key={index}>
@@ -27,14 +26,13 @@ const inlien2ReactElement = (inline: Inline, index) => {
                 </a>
             )
         case 'strong_emphasis':
-            let em = React.createElement('em', { key: index }, inline.content)
-            return React.createElement('strong', { key: index }, em)
+            return <strong key={index}><em>{inline.content}</em></strong>
         case 'strong':
-            return React.createElement('strong', { key: index }, inline.content)
+            return <strong key={index}>{inline.content}</strong>
         case 'emphasis':
-            return React.createElement('em', { key: index }, inline.content)
+            return <em key={index}>{inline.content}</em>
         case 'strikethrough':
-            return React.createElement('del', { key: index }, inline.content)
+            return <del key={index}>{inline.content}</del>
         case 'text':
             return inline.content
     }

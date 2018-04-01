@@ -75,6 +75,7 @@
     var refreshButton = document.querySelector('#refresh')
     sourceElement.addEventListener('input', function () {
         var ast = Parser.parse(sourceElement.innerText)
+        console.log(JSON.stringify(ast))
         astElement.innerHTML = prettyHtml(ast)
     })
     refreshButton.addEventListener('click', function () {
