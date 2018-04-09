@@ -66,4 +66,6 @@ process.stdout.on('data', function (data) {
     }
 })
 
+require('./platform/bootstrap.js')
+
 

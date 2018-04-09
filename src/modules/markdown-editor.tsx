@@ -11,6 +11,8 @@ interface Props {
     onFocusChange: (focused: boolean) => any
     cursorSource: Subject<[number, number]>
     reactionSource: Subject<any>
+
+    value: string
 }
 
 class MarkdownEditor extends React.Component<Props> {
@@ -90,6 +92,7 @@ class MarkdownEditor extends React.Component<Props> {
                 onKeyDown={this.handleKeyDown.bind(this)}
                 onFocus={() => this.props.onFocusChange(true)}
                 onBlur={() => this.props.onFocusChange(false)}
+                
             >
             </textarea>
         )

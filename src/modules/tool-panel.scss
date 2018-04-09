@@ -1,0 +1,53 @@
+@mixin tool-panel {
+    z-index: 10;
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 180px; 
+    padding: 0 8px;
+    background-color: #fff;
+    box-shadow: 1px 1px 1px 1px rgba(0,0,0,0.2);
+    transition: width 0.4s;
+    outline: none;
+    .button {
+        padding: 2px 4px;
+        font-size: 14px;
+        border: 1px solid #eee;
+        border-radius: 4px;
+        margin: 0 8px;
+        background-color: #fff;
+        cursor: pointer;
+    }
+    
+    .toggle {
+        position: absolute;
+        top: 8px;
+        right: 0px;
+        height: 24px;
+        width: 24px;
+        background-image: url(assets/float-setting.svg); 
+        background-size: 100%;
+        background-repeat: none;
+        &.hidden {
+            right: -25px;
+        }
+        transition: right 0.4s;
+    }
+
+    &.collapsed {
+        transition: width 0.6s;
+        width: 0px;
+        padding: 0;
+    }
+    ul {
+        list-style: none;
+        width: 180px;
+        margin-top: 32px;
+        li {
+            .active {
+                border-color: indianred;
+            }
+        }
+    }
+}

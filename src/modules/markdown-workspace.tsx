@@ -1,17 +1,26 @@
 import React from 'react'
+import classNames from 'classnames'
 import MarkdownEditor from './markdown-editor'
 import MarkdownMinimap from './markdown-minimap'
 import MarkdownShadowEditor from './shadow-editor'
 import { Subject, Subscription } from 'rxjs/Rx'
 import MarkdownParser from 'libs/markdown.js'
+import ToolPanel, { WorkMode } from './tool-panel'
+
 
 interface State {
     ast: any,
     selectionRange: [number, number],
     editorFocused: boolean
+
+    workMode: WorkMode   
 }
 
-class MarkdownWorkspace extends React.Component<{}, State> {
+interface Props {
+    document: string
+}
+
+class MarkdownWorkspace extends React.Component<Props, State> {
     private shadowEditorSource: Subject<any>
     private minimapReactionSource: Subject<any>
 
@@ -20,7 +29,9 @@ class MarkdownWorkspace extends React.Component<{}, State> {
         this.state = {
             ast: MarkdownParser.parse('\n'),
             selectionRange: [0, 0],
-            editorFocused: false 
+            editorFocused: false,
+
+            workMode: 'live-preview'
         }
         this.shadowEditorSource = new Subject()
         this.minimapReactionSource = new Subject()
@@ -41,14 +52,20 @@ class MarkdownWorkspace extends React.Component<{}, State> {
     render () {
         return (
             <div className="markdown-workspace">
-                <Headbar />
-                <div className="workspace">
+                <div className={
+                    classNames("workspace", {
+                        'edit': this.state.workMode == 'edit',
+                        'preview': this.state.workMode == 'preview',
+                        'live-preview': this.state.workMode == 'live-preview'
+                    })}
+                >
                     <MarkdownEditor 
                         onAstChange={this.handleAstChange.bind(this)} 
                         onCursorChange={selectionRange => this.setState({ selectionRange })}
                         onFocusChange={(focused) => this.setState({ editorFocused: focused })}
                         cursorSource={this.shadowEditorSource}
                         reactionSource={this.minimapReactionSource}
+                        value={this.props.document}
                     />
                     <MarkdownMinimap 
                         ast={this.state.ast}
@@ -60,15 +77,12 @@ class MarkdownWorkspace extends React.Component<{}, State> {
                         ast={this.state.ast} 
                         onCursorChange={this.handleShadownEditorCursorChange.bind(this)}
                     />
+                    <ToolPanel workMode={this.state.workMode} onChangeWorkMode={workMode => this.setState({workMode})} />
                 </div>
             </div>
         )
     }
 }
-
-const Headbar = () => (
-    <h1 className="headbar">Markdown Workspace</h1>
-)
 
 
 export default MarkdownWorkspace

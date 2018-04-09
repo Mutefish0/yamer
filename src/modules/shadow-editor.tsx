@@ -4,7 +4,9 @@ import hljs from 'highlight.js'
 import Caret from 'base/caret'
 import classNames from 'classnames'
 
-const LINE_HEIGHT = 22
+import Cursor from './svg/Cursor'
+
+const LINE_HEIGHT = 14 * 1.4
 const PADDING = 14 
 
 interface Point {
@@ -268,6 +270,7 @@ class ShadowEditor extends React.Component<Props, State> {
     componentDidUpdate () {
         const cursorHost = document.querySelector('span[data-cursor-offset]') as any
         const cursor = this.refs['cursor'] as any
+        const shadowEditor = this.refs['se'] as any 
         if (cursorHost) {
             const textHost = cursorHost.childNodes[0]
             if (textHost) {
@@ -282,10 +285,10 @@ class ShadowEditor extends React.Component<Props, State> {
                 // 如果前一个字符为'\n'则换行
                 if (prevChar == '\n') {
                     cursor.style.left = PADDING + 'px'
-                    cursor.style.top = rect.top + LINE_HEIGHT + 'px'
+                    cursor.style.top = shadowEditor.scrollTop + rect.top + LINE_HEIGHT + 'px'
                 } else {
                     cursor.style.left = rect.left + 'px'
-                    cursor.style.top = rect.top + 'px'
+                    cursor.style.top = shadowEditor.scrollTop + rect.top + 'px'
                 }
             }
         }
@@ -301,16 +304,16 @@ class ShadowEditor extends React.Component<Props, State> {
         return (
             <div 
                 onClick={this.setCursorByClickTextContent.bind(this)}
-
                 className={classNames([
                     'shadow-editor',
                     { 'cursor-sleep': this.state.isCursorSleep},
                     {'focused': this.props.focused }
                 ])}
-                ref="pre"
+                ref="se"
                 >
                 {view}
-                <i className="cursor" ref="cursor"/>
+                <span className="cursor" ref="cursor" dangerouslySetInnerHTML={{__html: Cursor}}>
+                </span>
             </div>
         )
     }
