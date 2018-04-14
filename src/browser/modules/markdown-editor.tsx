@@ -1,7 +1,7 @@
 import React from 'react'
 import MarkdownParser from 'libs/markdown.js'
-import Caret from 'base/caret'
-import { CharCode } from 'base/char-code'
+import Caret from 'browser/base/caret'
+import { CharCode } from 'browser/base/char-code'
 import * as R from 'ramda' 
 import { Subject, Observable, Subscription } from 'rxjs/Rx'
 

@@ -26,58 +26,28 @@ gulp.task('electron', cb => {
     cb()
 })
 
-function rollupTest () {
-    return new Promise((resolve, reject) => {
-        exec('rollup -c --format iife --input test/browser/test.ts -o dist/test.js',  err => {
-            if (err) {
-                reject(err)
-            } else {
-                resolve()
-            }
-        })
-    })
-}
-
-gulp.task('browser-test', cb => {
-    rollupTest().then(() => {
-        let child = spawn(electron, ['test/browser/index.js'], { stdio: 'pipe' })
-        child.on('close', code => {
-            process.exit(code)
-            cb()
-        })
-        child.stdout.on('data', data => {
-            if (data == 'recompile') {
-                rollupTest().then(() => {
-                    child.stdout.write('reload')
-                })
-            }
-        })
-
-    }, (err) => {
-        cb()
-        console.log(err)
-    })
-})
-
+// ------------ browser --------------
 gulp.task('copy-assets', () => {
-    gulp.src('src/assets/**/*.*')
-    .pipe(gulp.dest('dist/assets/'))
+    gulp.src('src/browser/assets/**/*.*')
+    .pipe(gulp.dest('dist/browser/assets/'))
 })
 
 gulp.task('sass', () => {
-    gulp.src('src/**/*.scss')
+    gulp.src('src/browser/**/*.scss')
     .pipe(sass().on('error', sass.logError))
     .pipe(concat('style.css'))
-    .pipe(gulp.dest('dist/'))
+    .pipe(gulp.dest('dist/browser/'))
 })
 
 gulp.task('watch:sass', () => {
-    gulp.watch('src/**/*.scss', ['sass'])
+    gulp.watch('src/browser/**/*.scss', ['sass'])
 })
 
 gulp.task('livereload', () => {
     const server = livereload.createServer({ port: 7001 })
-    server.watch(__dirname + '/dist/')
+    server.watch(__dirname + '/dist/browser/')
 })
+// ------------- platform -------------------
+
 
 gulp.task('default', ['electron', 'livereload', 'rollup-watch', 'watch:sass', 'copy-assets'])

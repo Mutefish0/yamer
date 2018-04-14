@@ -1,7 +1,7 @@
 import React from 'react'
 import { MAST, Block, Inline, Heading, ListItem, Blockquote, Paragraph } from 'libs/markdown'
 import hljs from 'highlight.js'
-import Caret from 'base/caret'
+import Caret from 'browser/base/caret'
 import classNames from 'classnames'
 
 import Cursor from './svg/Cursor'

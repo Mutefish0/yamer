@@ -1,17 +1,21 @@
 {
     "compilerOptions": {
-        "baseUrl": "./",
+        "baseUrl": ".",
         "paths": {
-            "base/*": ["src/base/*"],
-            "modules/*": ["src/modules/*"],
-            "libs/*": ["libs/*"]
+            "src/*": ["src/*"],
+            "browser/*": ["src/browser/*"],
+            "assets/*": ["src/browser/assets/*"],
+
+            "platform/*": ["src/platform/*"],
+            "libs/*": ["libs/*"],
+
+            "common/*": ["src/common/*"]
         },
         "outDir": "dist",
         "module": "es2015",
-        "target": "es2015",
+        "target": "es2017",
         "lib": [
-            "es6",
-            "dom"
+            "es6"
         ],
         "moduleResolution": "node",
         "allowSyntheticDefaultImports": true,
