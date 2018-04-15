@@ -1,5 +1,5 @@
 import React from 'react'
-import { MAST, Block, Inline, Heading, ListItem, Blockquote, Paragraph } from 'libs/markdown'
+import { MAST, Abstract } from 'libs/markdown'
 import hljs from 'highlight.js'
 import Caret from 'browser/base/caret'
 import classNames from 'classnames'
@@ -8,201 +8,6 @@ import Cursor from './svg/Cursor'
 
 const LINE_HEIGHT = 14 * 1.4
 const PADDING = 14 
-
-interface Point {
-    offset: number
-    line: number
-    column: number
-}
-
-interface Location {
-    start: Point
-    end: Point
-}
-
-const cursorSplitElement = (selectionRange, source, location) => {
-    const sStart = selectionRange[0]
-    const sEnd = selectionRange[1]
-    const iStart = location.start.offset
-    const iEnd = location.end.offset
-
-    const noneSelected =
-        sEnd < iStart
-        || sStart > iEnd
-    let innerView
-
-    if (noneSelected) {
-        innerView = source.slice(iStart, iEnd)
-    } else {
-        const leftCut = Math.max(sStart, iStart)
-        const rightCut = Math.min(sEnd, iEnd)
-        const isCollapsed = leftCut == rightCut
-
-        if (!isCollapsed) {
-            innerView = [
-                <span
-                    key='0'
-                    data-range={[iStart, leftCut]}
-                >
-                    {source.slice(iStart, leftCut)}
-                </span>,
-                <span
-                    key='1' className='selected'
-                    data-range={[leftCut, rightCut]}
-                >
-                    {
-                        source.slice(leftCut, rightCut)
-                    }
-                </span>,
-                <span
-                    key='2'
-                    data-range={[rightCut, iEnd]}
-                >
-                    {source.slice(rightCut, iEnd)}
-                </span>
-            ]
-        } else {
-            innerView = (
-                <span data-max={source.length} data-range={[iStart, iEnd]} data-cursor-offset={leftCut - iStart}>
-                    {source.slice(iStart, iEnd)}
-                </span>
-            )
-        }
-    }
-    return innerView 
-}
-
-
-const leafElement = (selectionRange, source, leaf, index) => {
-    switch (leaf.type) {
-        case 'link':
-            return (
-                <span
-                    className={leaf.type}
-                    key={index}
-                >
-                    {prefixElement(source, leaf, selectionRange)}
-                    <span className="link-child">
-                        {leaf.children.map(leafElement.bind({}, selectionRange, source))}
-                    </span>
-                    {suffixElement(source, leaf, selectionRange)}
-                </span>
-            )
-        default:
-            return (
-                <span
-                    className={leaf.type}
-                    key={index}
-                    data-range={[leaf.location.start.offset, leaf.location.end.offset]}
-                >
-                    {cursorSplitElement(selectionRange, source, leaf.location)}
-                </span>
-            )
-    }
-}
-
-const reactElement = (source, selectionRange, location, reactLocation) => {
-    const start = location.start.offset
-    const end = location.end.offset
-    const rStart = reactLocation.start.offset
-    const rEnd = reactLocation.end.offset
-
-    return [
-        <span key="0" data-range={[start, rStart]}>{cursorSplitElement (selectionRange, source, { start: { offset: start }, end: { offset: rStart } })}</span>,
-        <span key="1" className="reaction" data-range={[rStart, rEnd]}>{cursorSplitElement(selectionRange, source, { start: { offset: rStart }, end: { offset: rEnd } })}</span>,
-        <span key="2" data-range={[rEnd, end]}>{cursorSplitElement(selectionRange, source, { start: { offset: rEnd }, end: { offset: end } })}</span>
-    ]
-}
-
-const prefixElement = (source, block, selectionRange) => {
-    let start = block.children[0].location.start.offset 
-    let _start = block.location.start.offset
-    let fakeLocation = { start: { offset: _start }, end: { offset: start } }
-    if (start == _start) return undefined;
-    return (
-        <span 
-            className={`${block.type}-prefix`} 
-            key='prefix'
-            data-range={[_start, start]}
-        >
-            {
-                block.reactLocation ? reactElement(source, selectionRange, fakeLocation, block.reactLocation)
-                    : cursorSplitElement(selectionRange, source, fakeLocation)
-            }
-        </span>
-    )
-}
-
-const suffixElement = (source, block, selectionRange) => {
-    let end = block.children[block.children.length - 1].location.end.offset
-    let _end = block.location.end.offset
-    if (end == _end) return undefined;
-    return (
-        <span 
-            className={`${block.type}-suffix`} 
-            key='suffix' 
-            data-range={[end, _end]}
-        >
-            {cursorSplitElement(selectionRange, source, { start: { offset: end }, end: { offset: _end } })}
-        </span>
-    )
-}
-
-const block2ReactElement = (selectionRange, source, block: Block, index) => {
-    switch (block.type) {
-        case 'blockquote':
-            return (
-                <span key={index} className={block.type}>
-                    {block.children.map(block2ReactElement.bind({}, selectionRange, source)) }
-                </span>
-            )
-        case 'blockquote_unit':
-            return (
-                <span key={index} className={block.type}>
-                    {prefixElement(source, block, selectionRange)}
-                    {block.children.map(block2ReactElement.bind({}, selectionRange, source))}
-                    {suffixElement(source, block, selectionRange)}
-                </span>
-            )
-        case 'paragraph':
-        case 'heading':
-        case 'list_item':
-        case 'list_task_item':
-            return (
-                <span key={index} className={block.type}>
-                    {prefixElement(source, block, selectionRange)}
-                    {block.children.map(leafElement.bind({}, selectionRange, source))}
-                    {suffixElement(source, block, selectionRange)}
-                </span>
-            )
-        case 'thematic_break':
-        case 'blank_lines':
-            return leafElement(selectionRange, source, block, index)
-        case 'code_block':
-        case 'link_reference_definition':
-            return (
-                <span 
-                    key={index} className={block.type}
-                >
-                    {prefixElement(source, block, selectionRange)}
-                    {leafElement(selectionRange, source, block.children[0], index)}
-                    {suffixElement(source, block, selectionRange)}
-                </span>
-            )
-        case 'list':
-            return (
-                <span key={index} className={block.type}>
-                    {block.children.map(block2ReactElement.bind({}, selectionRange, source))}
-                </span>
-            )
-        default:
-            return undefined
-    }  
-}
-
-const ast2ReactElement = (source: string, ast: Block[], selectionRange) => {
-    return ast.map(block2ReactElement.bind({}, selectionRange, source))
-}
 
 interface Props {
     ast: MAST, 
@@ -213,6 +18,90 @@ interface Props {
 
 interface State {
     isCursorSleep: boolean
+}
+
+const slice = String.prototype.slice
+
+const attachSelection = (source, range, selectionRange, key, className='') => {
+    
+    const collapsed = selectionRange[0] == selectionRange[1]
+    const leftJoin = Math.max(range[0], selectionRange[0])
+    const rightJoin = Math.min(range[1], selectionRange[1])
+    if (collapsed) {
+        const props = { key, className, 'data-range': range }
+        if ( selectionRange[0] >= range[0] && selectionRange[0] <= range[1]) {
+            props['data-cursor-offset'] = selectionRange[0] - range[0]
+        } 
+        return <span {...props}>{slice.apply(source, range)}</span>
+    } else if (leftJoin < rightJoin) {
+        const ranges = [
+            [range[0], leftJoin],
+            [leftJoin, rightJoin],
+            [rightJoin, range[1]]
+        ]
+        const classNames = ['', 'selected', '']
+        let children = [0, 1, 2].map(i => {
+            const className = classNames[i], range = ranges[i]
+            return range[0] < range[1] && (
+                <span key={i} className={className} data-range={range}>
+                    {slice.apply(source, range)}
+                </span>
+            )
+        })
+        return (
+            <span key={key} className={className} data-range={range}>{children}</span>
+        )
+    } 
+}
+
+const astUnit2ReactElement = (source, unit: Abstract, index, selectionRange) => {
+    let children: any = unit.children 
+        ? ast2ReactElements(source, unit.children, selectionRange, index)
+        : attachSelection(source, unit.range, selectionRange, index)
+
+    let views = []
+    if (unit.ranges) {
+        let cursor = unit.range[0]
+        for (let key in unit.ranges) {
+            var range = unit.ranges[key]
+            if (cursor < range[0]) {
+                views.push(attachSelection(source, [cursor, range[0]], selectionRange, index))
+                cursor = range[0]
+            }
+            if (range[0] < range[1]) {
+                if (key == 'children') {
+                    views = views.concat(children)
+                } else {
+                    const splitKey = key.split('children#')
+                    if (splitKey[0] == '') {
+                        views.push(
+                            <span key={cursor} data-range={range} className={splitKey[1]}>
+                                {children}
+                            </span>
+                        )
+                    } else {
+                        views.push(attachSelection(source, range, selectionRange, index, splitKey[0]))
+                    }
+                }
+                cursor = range[1]
+            }
+        }
+        if (cursor < unit.range[1]) {
+            views.push(attachSelection(source, [cursor, unit.range[1]], selectionRange, index))
+        }
+    } else {
+        views = children
+    }
+
+    return (
+        <span key={index} className={unit.type} data-range={unit.range}>
+        { views }
+        </span>
+    )
+}  
+
+const ast2ReactElements = (source: string, ast: Abstract[], selectionRange, keyPrefix="") => {
+    return ast.map((unit, index) => astUnit2ReactElement(source, unit, `${keyPrefix}.${index}`, selectionRange))
 }
 
 class ShadowEditor extends React.Component<Props, State> {
@@ -296,7 +185,7 @@ class ShadowEditor extends React.Component<Props, State> {
 
     render () {
 
-        let view = ast2ReactElement(
+        let view = ast2ReactElements(
             this.props.ast.source, 
             this.props.ast.entities,
             this.props.selectionRange

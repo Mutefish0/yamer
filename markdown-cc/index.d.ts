@@ -4,10 +4,7 @@ interface Point {
     column: number
 }
 
-interface Location {
-    start: Point
-    end: Point
-}
+type IRange = [number, number]
 
 type InlineElement = 
     'hard_break' 
@@ -21,6 +18,22 @@ type InlineElement =
     | 'text'
     | 'keyboard'
 
+interface Abstract {
+    type: string
+    
+    content?: string
+
+    name?: string
+    url?: string
+    title?: string
+
+    range: IRange
+
+    ranges?: IRange[]
+
+    children?: (Inline|Block)[]
+}
+
 interface Inline {
     type: InlineElement
     content?: string
@@ -29,27 +42,31 @@ interface Inline {
     url?: string
     title?: string
 
-    location: Location
+    range: IRange
 
-    children?: [Inline]
+    ranges?: IRange[]
+
+    children?: Inline[]
 }
 
 interface Text {
     type: 'text'
     content?: string
-    location: Location
+    range: IRange
 }
 
 interface BlockquoteUnit {
     type: 'blockquote_unit'
     children: LeafBlock[]
-    location: Location
+    range: IRange
+    ranges?: IRange[]
 }
 
 interface Blockquote {
     type: 'blockquote'
     children: BlockquoteUnit[]
-    location: Location
+    range: IRange
+    ranges?: IRange[]
 }
 
 type LeafBlock = 
@@ -66,26 +83,28 @@ type LeafBlock =
 interface Paragraph {
     type: 'paragraph'
     children: Inline[]
-    location: Location
+    range: IRange
 }
 
 interface Heading {
     type: 'heading'
     level: number
     children: Inline[]
-    location: Location
+    range: IRange
+    ranges: IRange[]
 }
 
 interface ThematicBreak {
     type: 'thematic_break'
-    location: Location
+    range: IRange
 }
 
 interface CodeBlock {
     type: 'code_block'
     children: Text[]
     language: string
-    location: Location
+    range: IRange
+    ranges: IRange[]
 }
 
 
@@ -94,33 +113,35 @@ interface LinkReferenceDefinition {
     name: string
     url: string
     title?: string
-    location: Location
+    range: IRange
+    ranges: IRange[]
     children: [Text]
 }
 
 interface BlankLines {
     type: 'blank_lines'
-    location: Location
+    range: IRange
 }
 
 interface List {
     type: 'list',
     children: (ListItem | List)[]
-    location: Location
+    range: IRange
 }
 
 interface ListItem {
     type: 'list_item'
     children: Inline[]
-    location: Location
+    range: IRange
+    ranges: IRange[]
 }
 
 interface ListTaskItem {
     type: 'list_task_item'
     checked: boolean
-    reactLocation: Location
+    ranges: IRange[]
     children: Inline[]
-    location: Location
+    range: IRange
 }
 
 type ContainerBlock = Blockquote | BlockquoteUnit | CodeBlock
