@@ -57,7 +57,7 @@ const attachSelection = (source, range, selectionRange, key, className='') => {
 const astUnit2ReactElement = (source, unit: Abstract, index, selectionRange) => {
     let children: any = unit.children 
         ? ast2ReactElements(source, unit.children, selectionRange, index)
-        : attachSelection(source, unit.range, selectionRange, index)
+        : attachSelection(source, unit.range, selectionRange, index, unit.type)
 
     let views = []
     if (unit.ranges) {
@@ -93,11 +93,7 @@ const astUnit2ReactElement = (source, unit: Abstract, index, selectionRange) => 
         views = children
     }
 
-    return (
-        <span key={index} className={unit.type} data-range={unit.range}>
-        { views }
-        </span>
-    )
+    return views
 }  
 
 const ast2ReactElements = (source: string, ast: Abstract[], selectionRange, keyPrefix="") => {
@@ -129,7 +125,6 @@ class ShadowEditor extends React.Component<Props, State> {
 
     setCursorByClickTextContent (e) {
         const range = Caret.getRange()
-
         const startContainer = range.startContainer.parentElement
         const endContainer = range.endContainer.parentElement
 
@@ -185,7 +180,7 @@ class ShadowEditor extends React.Component<Props, State> {
 
     render () {
 
-        let view = ast2ReactElements(
+        let views = ast2ReactElements(
             this.props.ast.source, 
             this.props.ast.entities,
             this.props.selectionRange
@@ -200,7 +195,7 @@ class ShadowEditor extends React.Component<Props, State> {
                 ])}
                 ref="se"
                 >
-                {view}
+                    {views}
                 <span className="cursor" ref="cursor" dangerouslySetInnerHTML={{__html: Cursor}}>
                 </span>
             </div>
