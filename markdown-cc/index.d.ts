@@ -101,7 +101,7 @@ interface ThematicBreak {
 
 interface CodeBlock {
     type: 'code_block'
-    children: Text[]
+    content: string
     language: string
     range: IRange
     ranges: IRange[]

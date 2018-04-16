@@ -22,50 +22,47 @@ interface State {
 
 const slice = String.prototype.slice
 
-const attachSelection = (source, range, selectionRange, key, className='') => {
-    
+const attachSelection = (source, range, selectionRange) => {
     const collapsed = selectionRange[0] == selectionRange[1]
     const leftJoin = Math.max(range[0], selectionRange[0])
     const rightJoin = Math.min(range[1], selectionRange[1])
+    const props = { key: range[0], 'data-range': range }
     if (collapsed) {
-        const props = { key, className, 'data-range': range }
         if ( selectionRange[0] >= range[0] && selectionRange[0] <= range[1]) {
             props['data-cursor-offset'] = selectionRange[0] - range[0]
         } 
         return <span {...props}>{slice.apply(source, range)}</span>
     } else if (leftJoin < rightJoin) {
-        const ranges = [
-            [range[0], leftJoin],
-            [leftJoin, rightJoin],
-            [rightJoin, range[1]]
-        ]
+        const ranges = [ [range[0], leftJoin], [leftJoin, rightJoin], [rightJoin, range[1]] ]
         const classNames = ['', 'selected', '']
-        let children = [0, 1, 2].map(i => {
+        return [0, 1, 2].map(i => {
             const className = classNames[i], range = ranges[i]
             return range[0] < range[1] && (
-                <span key={i} className={className} data-range={range}>
+                <span key={range[0]} className={className} data-range={range}>
                     {slice.apply(source, range)}
                 </span>
             )
         })
-        return (
-            <span key={key} className={className} data-range={range}>{children}</span>
-        )
-    } 
+    } else {
+        return slice.apply(source, range)
+    }
 }
 
-const astUnit2ReactElement = (source, unit: Abstract, index, selectionRange) => {
+const astUnit2ReactElement = (source, unit: Abstract, selectionRange) => {
     let children: any = unit.children 
-        ? ast2ReactElements(source, unit.children, selectionRange, index)
-        : attachSelection(source, unit.range, selectionRange, index, unit.type)
-
+        ? ast2ReactElements(source, unit.children, selectionRange)
+        : attachSelection(source, unit.range, selectionRange)
     let views = []
     if (unit.ranges) {
         let cursor = unit.range[0]
         for (let key in unit.ranges) {
             var range = unit.ranges[key]
             if (cursor < range[0]) {
-                views.push(attachSelection(source, [cursor, range[0]], selectionRange, index))
+                views.push(
+                    <span key={cursor} data-range={[cursor, range[0]]}>
+                        {attachSelection(source, [cursor, range[0]], selectionRange)}
+                    </span>
+                )
                 cursor = range[0]
             }
             if (range[0] < range[1]) {
@@ -80,24 +77,29 @@ const astUnit2ReactElement = (source, unit: Abstract, index, selectionRange) => 
                             </span>
                         )
                     } else {
-                        views.push(attachSelection(source, range, selectionRange, index, splitKey[0]))
+                        views.push(
+                            <span key={cursor} data-range={range} className={splitKey[0]}>
+                                {attachSelection(source, range, selectionRange)}
+                            </span>
+                        )
                     }
                 }
                 cursor = range[1]
             }
         }
         if (cursor < unit.range[1]) {
-            views.push(attachSelection(source, [cursor, unit.range[1]], selectionRange, index))
+            views.push(attachSelection(source, [cursor, unit.range[1]], selectionRange))
         }
     } else {
         views = children
     }
-
-    return views
+    return (
+        <span key={unit.range[0]} data-range={unit.range} className={unit.type}>{views}</span>
+    )
 }  
 
-const ast2ReactElements = (source: string, ast: Abstract[], selectionRange, keyPrefix="") => {
-    return ast.map((unit, index) => astUnit2ReactElement(source, unit, `${keyPrefix}.${index}`, selectionRange))
+const ast2ReactElements = (source: string, ast: Abstract[], selectionRange) => {
+    return ast.map((unit, index) => astUnit2ReactElement(source, unit, selectionRange))
 }
 
 class ShadowEditor extends React.Component<Props, State> {

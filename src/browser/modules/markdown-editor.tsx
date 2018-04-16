@@ -69,10 +69,8 @@ class MarkdownEditor extends React.Component<Props> {
                     const value = target.value
                     const node = action.node
                     const isChecked = node.checked
-                    const reactLocation = node.reactLocation
-                    const start = reactLocation.start.offset
-                    const end = reactLocation.end.offset
-                    target.value = `${value.slice(0, start)}${isChecked ? ' ' : 'x'}${value.slice(end)}`
+                    const range = node.ranges['check']
+                    target.value = `${value.slice(0, range[0])}${isChecked ? ' ' : 'x'}${value.slice(range[1])}`
                     this.handleInput()
                 default:                
             }

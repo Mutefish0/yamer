@@ -29,8 +29,7 @@
             font-family: "SFMono-Regular",Consolas,"Liberation Mono",Menlo,Courier,monospace !important;
             min-height: 24px;
             margin: 8px 0;
-            border: 1px solid rgba(0,0,0,0.08); 
-            border: none;
+            box-shadow: inset 0 0 2px 0px rgba(205,92,92,0.1);
         }
         @include github;
     }

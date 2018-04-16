@@ -37,6 +37,10 @@
         font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
     }
 
+    .code {
+        margin: 0 1px;
+    }
+
     .blank_lines {
         display: block;
     }
@@ -54,18 +58,24 @@
     }
 
     .thematic_break,
-    .blockquote_unit-prefix, 
-    .list_item-prefix,
-    .list_task_item-prefix,
-    .heading-prefix,
-    .code_block-prefix,
-    .code_block-suffix
+    .blockquote_unit .prefix, 
+    .heading .prefix,
+    .list_item .prefix,
+    .list_task_item .prefix,
+    .code_block .prefix,
+    .code_block .suffix,
+    .code,
+    .keyboard
         {
-        color: #6a737d;
+        color: rgb(105, 123, 146);
     }
 
-    .list_task_item .reaction {
-        color: #d7dbe0;
+    .code_block .language {
+        color: #6f43c1;
+    }
+
+    .list_task_item .check {
+        color: rgb(105, 123, 146);
     }
 
     // inline
@@ -81,9 +91,6 @@
     }
     .keyboard {
         font-family: Menlo;
-    }
-    .code, .keyboard {
-        color: #6a737d;
     }
 
     &.focused .selected {
@@ -103,7 +110,7 @@
     }
 
     .cursor {
-        z-index: 5;
+        z-index: -1;
         display: none;
         position: absolute;
         width: 22px;

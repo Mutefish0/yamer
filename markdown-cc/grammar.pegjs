@@ -182,7 +182,7 @@ code_block =
     _7:_
     { 
         return { 
-            type: 'code_block', content: code, language: lan, range: [_0,_7], 
+            type: 'code_block', content: deepJoin(code, ''), language: lan, range: [_0,_7], 
             ranges: { prefix: [_1,_2], language: [_3,_4], suffix: [_5,_6] }
         } 
     }
@@ -281,10 +281,13 @@ paragraph_newline =
     { return { type: 'text', content: ' ', range: [_0,_1] } }
 
 paragraph = 
-    _0:_ value:(inline / paragraph_newline)+ separator _1:_
+    _0:_ value:(inline / paragraph_newline)+ _ce:_ separator _1:_
     // isbq 用来判断当前paragraph是否为blockquote，因为leafblock中没有包含blockquote
     // 在blockquote_unit中需要用到
-    { return { type: 'paragraph', children: value, isbq: /^[ ]{0,3}>/.test(text()), range: [_0,_1] } }
+    { return { 
+        type: 'paragraph', children: value, isbq: /^[ ]{0,3}>/.test(text()), 
+        range: [_0,_1], ranges: { children: [_0,_ce] } 
+    } }
 
 character = special_character / [^\n]
 

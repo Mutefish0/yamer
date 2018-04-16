@@ -51,7 +51,7 @@ const block2ReactElement = function (block: Block, index) {
         case 'thematic_break':
             return React.createElement('hr', { key: index }) 
         case 'code_block':
-            let highlight = hljs.highlight(block.language, block.children[0].content, true)
+            let highlight = hljs.highlight(block.language, block.content, true)
             let code = React.createElement('code', 
             { 
                 className: 'hljs', 
