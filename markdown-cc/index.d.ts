@@ -148,9 +148,6 @@ type ContainerBlock = Blockquote | BlockquoteUnit | CodeBlock
 
 type Block = ContainerBlock | LeafBlock
 
-export type MAST = { 
-    entities: Block[]
-    source: string
-}
+export type MAST = Block[]
 
 export function parse (source: string): MAST

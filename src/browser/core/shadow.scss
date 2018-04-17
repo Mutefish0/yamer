@@ -16,7 +16,7 @@
     }
 }
 
-@mixin shadow-editor {
+@mixin shadow {
     font-size: 14px;
     position: absolute;
     left: 0;
@@ -31,7 +31,6 @@
     word-wrap: break-word; 
     word-break: break-all;
     cursor: text;
-    @include github;
     
     .code_block {
         font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
@@ -52,7 +51,10 @@
     .link_reference_definition,
     .link 
     {
-        .link-child {
+        .name {
+            color: indianred;
+        }
+        .url {
             text-decoration: underline;
         }
     }
@@ -65,7 +67,8 @@
     .code_block .prefix,
     .code_block .suffix,
     .code,
-    .keyboard
+    .keyboard,
+    .code_block
         {
         color: rgb(105, 123, 146);
     }

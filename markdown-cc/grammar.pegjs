@@ -131,7 +131,7 @@
 }
 
 start = 
-    blocks:block* { return { entities: blocks, source: text() } }
+    blocks:block*
 
 block = 
     container_block / leaf_block

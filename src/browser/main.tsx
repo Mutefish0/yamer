@@ -2,6 +2,8 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import MarkdownWorkspace from 'browser/modules/markdown-workspace'
 
+import Editor from 'browser/core/editor'
+
 interface State {
     started: boolean
 
@@ -23,7 +25,12 @@ class App extends React.Component<{}, State> {
     }
 
     render () {
-        return <MarkdownWorkspace document={this.state.document}/>
+        return (
+            <div className="workspace">
+                <Editor />
+            </div>
+        )
+        //return <MarkdownWorkspace document={this.state.document}/>
     }
 }
 

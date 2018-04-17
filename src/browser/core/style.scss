@@ -1,0 +1,9 @@
+@import './editor';
+.workspace {
+    height: 100%;
+    overflow-x: hidden;
+    .headbar {
+        background: #EEF1F3;
+    } 
+    @include editor;
+}
