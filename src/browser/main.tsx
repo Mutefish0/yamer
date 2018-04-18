@@ -27,7 +27,7 @@ class App extends React.Component<{}, State> {
     render () {
         return (
             <div className="workspace">
-                <Editor />
+                <Editor defaultValue="1233"/>
             </div>
         )
         //return <MarkdownWorkspace document={this.state.document}/>

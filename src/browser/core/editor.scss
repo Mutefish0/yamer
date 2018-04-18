@@ -7,10 +7,10 @@
         letter-spacing: normal;
         .source {
             position: absolute;
-            z-index: -1;
-            left: 0%;
+            z-index: 2;
+            left: 50%;
             top: 0;
-            width: 100%;
+            width: 50%;
             height: 100%;
             padding: 14px;
             box-sizing: border-box;

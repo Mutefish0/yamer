@@ -106,7 +106,7 @@
         background: indianred;
     }
     
-    &.cursor-sleep {
+    &.napping {
         .cursor {
             animation: flash 1s infinite;
         }
@@ -122,7 +122,7 @@
         font-style: normal;
         transform: translate(-50%, -3px);
     }
-    &.focused .cursor {
+    &.focused .cursor.show {
         display: inline-block;
     }
 }

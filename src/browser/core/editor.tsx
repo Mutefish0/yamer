@@ -135,9 +135,9 @@ class Editor extends React.Component<Props, State> {
     componentDidMount () {
         /* --- source --- */
         let prevRange = [0, 0]
-        const inputSource = Observable.fromEvent(this.refs['source'] as Element, 'input')
-        const carriageReturnSource = Observable.fromEvent(document, 'keyup').filter(e => e['keyCode'] == CharCode.CarriageReturn)
-        const documentCursorChangeSource = Observable.merge(inputSource, carriageReturnSource, Observable.fromEvent(document, 'selectionchange'))
+        const sourceElement = this.refs['source'] as HTMLTextAreaElement
+        const deletionAndReturnSource = Observable.fromEvent(sourceElement, 'keyup').filter(e => R.contains(e['keyCode'], [CharCode.CarriageReturn, CharCode.BackSpace]))
+        const documentCursorChangeSource = Observable.merge(deletionAndReturnSource, Observable.fromEvent(document, 'selectionchange'))
         const cursorChangeSource = documentCursorChangeSource.map(e => {
             const refEditor = this.refs['source'] as any
             return [refEditor.selectionStart, refEditor.selectionEnd] as Selection
@@ -156,6 +156,11 @@ class Editor extends React.Component<Props, State> {
             clearTimeout(this.cursorNappingTimeout)
             setTimeout(() => this.setState({ isNapping: true }), 800)
         })
+
+        // 设置默认source
+        if (this.props.defaultValue) {
+            this.setSource(this.props.defaultValue)
+        }
     }
 
     static defaultProps = {
@@ -165,8 +170,9 @@ class Editor extends React.Component<Props, State> {
         reactionSource: new Subject()
     }
 
-    dealSourceChange (e) {
-        this.source = e.target.value 
+    dealSourceChange () {
+        const sourceElement = this.refs['source'] as HTMLTextAreaElement
+        this.source = sourceElement.value 
         const ast = MarkdownParser.parse(this.source)
         this.setState({ ast })
         this.props.onAstChange(ast)
@@ -176,16 +182,13 @@ class Editor extends React.Component<Props, State> {
         if (e.keyCode == CharCode.Tab) {
             const cursorOffset = e.target.selectionStart
             const newSource = `${this.source.slice(0, cursorOffset)}  ${this.source.slice(cursorOffset)}`
-            const ast = MarkdownParser.parse(newSource)
-            this.source = newSource
-            this.setState({ ast }) 
+            this.setSource(newSource)
             this.setSelection([cursorOffset + 2, cursorOffset + 2])
-            this.props.onAstChange(ast)
             e.preventDefault()
         }
     }
 
-    // 从影子编辑器点击，选取后设置源编辑器的光标
+    // 从影子编辑器点击(或选中)，选取后设置源编辑器的光标
     dealSelectionRevision (e) {
         const range = Caret.getRange()
         const startContainer = range.startContainer.parentElement
@@ -219,11 +222,24 @@ class Editor extends React.Component<Props, State> {
 
     setSelection (range: Selection) {
         const sourceElement = this.refs['source'] as HTMLTextAreaElement
-        sourceElement.setSelectionRange(range[0], range[0])
+        sourceElement.setSelectionRange(range[0], range[1])
         sourceElement.focus()
     }
 
+    setSource (source: string) {
+        const sourceElement = this.refs['source'] as HTMLTextAreaElement
+        this.source = source
+        sourceElement.value = source
+        this.dealSourceChange()
+    }
+
+    // 渲染闭合光标
     componentDidUpdate () {
+        // 如果光标未闭合，无需操作
+        if (this.state.selection[0] != this.state.selection[1]) {
+            return 
+        }
+
         const cursorHost = document.querySelector('.editor [data-cursor-offset]') as HTMLSpanElement
         const cursor = this.refs['cursor'] as HTMLSpanElement
         const shadowEditor = this.refs['shadow'] as HTMLDivElement
@@ -253,6 +269,7 @@ class Editor extends React.Component<Props, State> {
 
     render () {
         const shadowViews = ast2ReactElements(this.source, this.state.ast, this.state.selection)
+        const showCursor = this.state.selection[0] == this.state.selection[1]
         return (
             <div className="editor">
                 <textarea
@@ -269,13 +286,13 @@ class Editor extends React.Component<Props, State> {
                     onClick={this.dealSelectionRevision.bind(this)}
                     className={classNames([
                         'shadow',
-                        { 'cursor-sleep': this.state.isNapping },
+                        { 'napping': this.state.isNapping },
                         { 'focused': this.state.isFocused }
                     ])}
                     ref="shadow"
                 >
                     {shadowViews}
-                    <span className="cursor" ref="cursor" dangerouslySetInnerHTML={{ __html: Cursor }}>
+                    <span className={classNames('cursor', { 'show': showCursor}) } ref="cursor" dangerouslySetInnerHTML={{ __html: Cursor }}>
                     </span>
                 </div>
             </div>
