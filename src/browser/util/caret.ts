@@ -1,4 +1,4 @@
-import { Boundary } from 'browser/base/boundary-point'
+import { Boundary } from 'browser/util/boundary-point'
 
 /**
  * @TODO

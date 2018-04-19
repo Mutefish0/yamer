@@ -1,9 +1,24 @@
-@import './editor';
+@import './editor/index';
+@import './reader/index';
+
 .workspace {
     height: 100%;
     overflow-x: hidden;
+    position: relative;
     .headbar {
         background: #EEF1F3;
     } 
-    @include editor;
+    .editor, .reader {
+        position: absolute;
+        top: 0;
+        width: 50%;
+    }
+    .editor {
+        left: 0;
+        @include editor;
+    }
+    .reader {
+        left: 50%;
+        @include reader;
+    }
 }

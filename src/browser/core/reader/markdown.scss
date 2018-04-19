@@ -1,0 +1,111 @@
+@import './language-style/mixin-dracula';
+@import './language-style/mixin-github';
+
+@mixin markdown {
+    line-height: 1.5;
+    color: #2c3f51;
+    background-color: #F9FAFB;;
+    code {
+        padding: 1px 3px;
+        margin: 0 1px;
+        background-color: #fff;
+        border-radius: 4px;
+        font-family: inherit;
+        border: 1px solid rgba(0,0,0,0.06);
+    }
+    kbd {
+        font-family: Menlo;
+        padding: 0px 2px;
+        margin: 0 1px;
+        color: #364B60;
+        background-color: #fff;
+        border-radius: 4px;
+        border: 1px solid rgba(0,0,0,0.06);
+        border-bottom: none; 
+        box-shadow: 0 2px 0  rgba(0,0,0,0.2);
+    }
+    pre {
+        code {
+            font-family: "SFMono-Regular",Consolas,"Liberation Mono",Menlo,Courier,monospace !important;
+            min-height: 24px;
+            margin: 8px 0;
+            box-shadow: inset 0 0 2px 0px rgba(205,92,92,0.1);
+        }
+        @include github;
+    }
+    a {
+        color: indianred;
+        text-decoration: none;
+    }
+    blockquote {
+        margin: 12px 0;
+        background-color: rgba(102,128,153,0.05);
+        border-top-right-radius: 5px;
+        border-bottom-right-radius: 5px;
+        padding: 15px 20px;
+        border-left: 8px solid rgba(102,128,153,0.075);
+        p {
+            margin: 0;
+        }
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+        color: #364B60;
+        font-weight: bold;
+        line-height: 1.2;
+        margin-top: 22px;
+        margin-bottom: 16px;
+    }
+
+    h1 {
+        font-size: 26px;
+    }
+    h2 {
+        font-size: 22px;
+    }
+    h3 {
+        font-size: 18px;
+    }
+    h4, h5, h6 {
+        font-size: 16px;
+    }
+    p {
+        margin: 12px 0;
+    }
+    hr {
+        margin: 6px 0;
+        border: 0;
+        border-top: 1px solid rgba(102,128,153,0.1);
+    }
+    ul {
+        margin: 12px 0;
+        list-style-type: disc;
+        padding-left: 38px; 
+        ul {
+            list-style-type: circle; 
+            margin: 0;
+        }
+    }
+    li {
+        position: relative;
+        &.task {
+            list-style: none;
+        }
+        i.checkbox {
+            position: absolute;
+            left: -28px;
+            top: -1px;
+            width: 22px;
+            height: 22px;
+            background-image: url('assets/checkbox.svg');
+            background-size: 100%;
+            cursor: pointer;
+            &.checked {
+                background-image: url('assets/checkbox-active.svg');
+            }
+        }
+    }
+    del {
+        color: rgba(44, 63, 81, 0.63);
+    }
+}

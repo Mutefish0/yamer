@@ -1,17 +1,17 @@
 import React from 'react'
 import MarkdownParser from 'libs/markdown.js'
-import Caret from 'browser/base/caret'
-import { CharCode } from 'browser/base/char-code'
+import Caret from 'browser/util/caret'
+import { CharCode } from 'browser/util/char-code'
 import * as R from 'ramda'
 import { Subject, Observable, Subscription } from 'rxjs/Rx'
 import { MAST, Abstract } from 'libs/markdown'
 import classNames from 'classnames'
-import Cursor from '../modules/svg/Cursor'
+import Cursor from './Cursor'
 
 const LINE_HEIGHT = 14 * 1.4
 const PADDING = 14
 
-interface Reaction {
+export interface Reaction {
     type: string
     node: Abstract
 }
@@ -136,8 +136,9 @@ class Editor extends React.Component<Props, State> {
         /* --- source --- */
         let prevRange = [0, 0]
         const sourceElement = this.refs['source'] as HTMLTextAreaElement
-        const deletionAndReturnSource = Observable.fromEvent(sourceElement, 'keyup').filter(e => R.contains(e['keyCode'], [CharCode.CarriageReturn, CharCode.BackSpace]))
-        const documentCursorChangeSource = Observable.merge(deletionAndReturnSource, Observable.fromEvent(document, 'selectionchange'))
+        const inputSource = Observable.fromEvent(sourceElement, 'input')
+        //const deletionAndReturnSource = Observable.fromEvent(sourceElement, 'keyup').filter(e => R.contains(e['keyCode'], [CharCode.CarriageReturn, CharCode.BackSpace]))
+        const documentCursorChangeSource = Observable.merge(inputSource, Observable.fromEvent(document, 'selectionchange'))
         const cursorChangeSource = documentCursorChangeSource.map(e => {
             const refEditor = this.refs['source'] as any
             return [refEditor.selectionStart, refEditor.selectionEnd] as Selection
@@ -161,6 +162,19 @@ class Editor extends React.Component<Props, State> {
         if (this.props.defaultValue) {
             this.setSource(this.props.defaultValue)
         }
+
+        // 处理reaction
+        this.props.reactionSource.subscribe((action: Reaction) => {
+            switch (action.type) {
+                case 'click_checkbox':
+                    const node = action.node
+                    const isChecked = node.checked
+                    const range = node.ranges['check']
+                    const newSource = `${this.source.slice(0, range[0])}${isChecked ? ' ' : 'x'}${this.source.slice(range[1])}`
+                    this.setSource(newSource)
+                default:
+            }
+        })
     }
 
     static defaultProps = {

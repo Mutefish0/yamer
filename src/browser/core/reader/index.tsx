@@ -89,8 +89,8 @@ const ast2ReactElement = function (ast: Block[]) {
 
 
 interface Props {
-    ast: MAST,
-    onReact: Function
+    ast?: MAST,
+    onReact?: Function
 }
 
 class Reader extends React.Component<Props> {

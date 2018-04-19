@@ -27,6 +27,8 @@ interface Abstract {
     url?: string
     title?: string
 
+    checked: boolean
+
     range: IRange
 
     ranges?: IRange[]
