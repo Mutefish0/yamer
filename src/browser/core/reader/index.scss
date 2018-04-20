@@ -2,7 +2,6 @@
 
 @mixin reader {
     padding: 0 14px;
-    height: 100%;
     overflow-y: auto;
     box-sizing: border-box;
     @include markdown;

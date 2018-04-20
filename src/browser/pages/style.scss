@@ -1,0 +1,35 @@
+@import "../core/core";
+@import "./tool-panel";
+
+.workspace {
+    @include core;
+    .tool-panel {
+        @include tool-panel;
+    }
+    &.edit {
+        .editor {
+            right: 0%;
+        }
+        .reader {
+            z-index: -1;
+            left: 100%;
+        }
+    }
+    &.preview {
+        .editor {
+            z-index: -1;
+            right: 100%;
+        }
+        .reader {
+            left: 0%;
+        }
+    }
+    &.live-preview {
+        .editor {
+            right: 50%;
+        }
+        .reader {
+            left: 50%;
+        }
+    }
+}

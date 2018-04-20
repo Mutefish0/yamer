@@ -2,11 +2,11 @@ import React from 'react'
 import classNames from 'classnames'
 
 interface Props {
-    workMode: WorkMode
-    onChangeWorkMode: (mode: WorkMode) => any
+    workmode: Workmode
+    onChangeWorkmode: (mode: Workmode) => any
 }
 
-export type WorkMode = 'edit' | 'preview' | 'live-preview'
+export type Workmode = 'edit' | 'preview' | 'live-preview'
 
 interface State {
     isHidden: boolean
@@ -23,8 +23,8 @@ class ToolPanel extends React.Component<Props, State> {
     }
 
     
-    changeWorkMode (mode) {
-        this.props.onChangeWorkMode(mode)
+    changeWorkmode (mode) {
+        this.props.onChangeWorkmode(mode)
     }
 
     showPanel () {
@@ -53,16 +53,16 @@ class ToolPanel extends React.Component<Props, State> {
                         <h2>工作模式</h2>
                         <span 
                             
-                            className={classNames('button', {'active': this.props.workMode == 'edit'})}
-                            onClick={() => this.changeWorkMode('edit')}
+                            className={classNames('button', {'active': this.props.workmode == 'edit'})}
+                            onClick={() => this.changeWorkmode('edit')}
                         >编辑</span>
                         <span
-                            className={classNames('button', { 'active': this.props.workMode == 'preview' })}
-                            onClick={() => this.changeWorkMode('preview')}
+                            className={classNames('button', { 'active': this.props.workmode == 'preview' })}
+                            onClick={() => this.changeWorkmode('preview')}
                         >预览</span>
                         <span
-                            className={classNames('button', { 'active': this.props.workMode == 'live-preview' })}
-                            onClick={() => this.changeWorkMode('live-preview')}
+                            className={classNames('button', { 'active': this.props.workmode == 'live-preview' })}
+                            onClick={() => this.changeWorkmode('live-preview')}
                         >实时预览</span>
                     </li>
                 </ul>
