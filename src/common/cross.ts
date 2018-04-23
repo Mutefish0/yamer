@@ -1,18 +1,22 @@
+import URLPattern from 'url-pattern'
 
-export interface BrowserRequest {
-    command: string
-    data: { [key: string]: string | number }
-}
+export const port = 26303
+export const domain = `http://localhost:${port}`
 
-
-export interface PlatformRespnose {
+export interface Respnose {
     error?: string
-    result: { [key: string]: string | number }
+    result: JSON
 }
 
-const port = 26303
-const cross = { port }
+interface Document {
+    id: string
+    content: string
+}
 
-export type Command = 'setup' | 'save' | 'fetch'
+export const patterns = {
+    'setup': new URLPattern('/setup'),
+    'document': new URLPattern('/pull/doc(/:id)'),
+    'save': new URLPattern('/push/doc(/:id)/save'),
+    'new': new URLPattern('/pull/new')
+}
 
-export default cross

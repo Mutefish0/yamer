@@ -177,6 +177,12 @@ class Editor extends React.Component<Props, State> {
         })
     }
 
+    componentWillReceiveProps (nextProps) {
+        if (nextProps.defaultValue != this.props.defaultValue) {
+            this.setSource(nextProps.defaultValue)
+        }
+    }
+
     static defaultProps = {
         placeholder: '',
         defaultValue: '',

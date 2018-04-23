@@ -6,21 +6,43 @@ import classNames from 'classnames'
 import { MAST } from 'libs/markdown'
 import { Subject } from 'rxjs'
 
-interface State {
-    ast: MAST,
-    workmode: Workmode
+import request from 'browser/util/request'
+
+interface Props {
+
 }
 
-class Workspace extends React.Component<{}, State> {
-    private reactionSource: Subject<Reaction> 
+interface State {
+    ast: MAST,
+    workmode?: Workmode
+    document?: {
+        id: string
+        content: string
+        readOnly?: boolean
+        createSince?: number
+        lastModify?: number
+    }
+}
 
+class Workspace extends React.Component<Props, State> {
+    private reactionSource: Subject<Reaction>
+    
     constructor (props) {
         super(props)
         this.state = {
             ast: [],
-            workmode: 'live-preview'
+            workmode: 'live-preview',
+            document: {
+                id: '',
+                content: ''
+            }
         }
         this.reactionSource = new Subject()
+    }
+
+    async componentDidMount () {
+        const resp = await request('document', { id: 'homelist' })
+        this.setState({document: resp.result})
     }
 
     dealReaderReact (reaction: Reaction) {
@@ -35,6 +57,7 @@ class Workspace extends React.Component<{}, State> {
         return (
             <div className={`workspace ${this.state.workmode}`}>
                 <Editor 
+                    defaultValue={this.state.document.content}
                     onAstChange={ast => this.setState({ast})} 
                     reactionSource={this.reactionSource} 
                 />

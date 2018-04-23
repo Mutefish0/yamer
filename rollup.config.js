@@ -30,6 +30,10 @@ export default [{
             typescript({
                 typescript: require('typescript')
             }),
+            commonjs({
+                main: true,
+                include: ['src/platform/**', 'src/common/**', 'node_modules/**']
+            }),
             resolve()
         ],
         watch: {

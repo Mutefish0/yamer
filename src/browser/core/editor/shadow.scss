@@ -57,6 +57,13 @@
         .url {
             text-decoration: underline;
         }
+        .title {
+            color: rgb(105, 123, 146);
+        }
+    }
+
+    .image .url {
+        text-decoration: underline;
     }
 
     .thematic_break,
@@ -71,6 +78,11 @@
     .code_block
         {
         color: rgb(105, 123, 146);
+    }
+
+    .hard_break {
+        background-color:  rgba(255,92,92,0.3);
+        border-radius: 2px;
     }
 
     .code_block .language {

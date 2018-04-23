@@ -200,7 +200,7 @@ blockquote_unit =
     { 
         return { 
             type: 'blockquote_unit', children: value, range: [_0,_3], 
-            ranges: { prefix: [_1,_2], children: [ce,ce] }
+            ranges: { prefix: [_1,_2], children: [cs,ce] }
         } 
     }
 
@@ -215,19 +215,19 @@ link_ref_title =
     { return deepJoin(title, '') }
 
 link_name = 
-    (special_character / [^\n\]\[])+
-    { return text() }
+    _0:_ (special_character / [^\n\]\[])+ _1:_
+    { return { type: 'text', content: text(), range: [_0,_1] } }
 
 link_reference_definition = 
     _0:_
         leading_indent '[' _1:_ name:link_name _2:_ ']:' space*'\n'?space* 
-        _3:_ url:url _4:_ title:link_ref_title? separator
-    _5:_
+        _3:_ url:url _4:_ title:link_ref_title? _5:_  separator
+    _6:_
     { 
         return defineLinkReference(name.content, { 
             type: "link_reference_definition", 
             url: url.content, title: title, name: name,
-            range: [_0,_5], ranges: { name: [_1,_2], url: [_3,_4] }
+            range: [_0,_6], ranges: { name: [_1,_2], url: [_3,_4], title: [_4,_5] }
         }) 
     }
 
@@ -418,20 +418,22 @@ link =
     }
 
 link_reference = 
-    '[' name:link_name ']'  &{ return findLinkReference(name.content) != null } 
+    _0:_ '[' name:link_name ']' _1:_  &{ return findLinkReference(name.content) != null } 
     {
         var ref = findLinkReference(name.content); 
-        return Object.assign({}, ref, { type: 'link' }) 
+        return Object.assign({}, ref, 
+            { type: 'link', range: [_0,_1], children: [name], ranges: { 'children#name': name.range }  }
+        ) 
     }
 
 image = 
     _0:_
         '![' _1:_ name:link_name _2:_ '](' space* 
-        _3:_ url:url _4:_ space+ title:link_title? space* ')'
+        _3:_ url:url _4:_ title:link_title? space* ')'
     _5:_
     { 
         return { 
-            type: 'image', name: name.join(''), url: url.content, title: title, 
+            type: 'image', name: name.content, url: url.content, title: title, 
             range: [_0,_5], ranges: { name: [_1,_2], url: [_3,_4] }
         } 
     }
