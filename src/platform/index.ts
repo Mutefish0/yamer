@@ -10,6 +10,7 @@ const server = http.createServer(async function (req, resp) {
         const result = await Command.process(req)
         resp.end(JSON.stringify({ result }))
     } catch (error) {
+        console.log(error)
         resp.end(JSON.stringify({ error }))
     }
 }) 

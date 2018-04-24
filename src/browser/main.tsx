@@ -2,7 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import Workspace from 'browser/pages/workspace'
 import SetupPage from 'browser/pages/setup-page'
-
+import { systemActionPatterns } from 'common/cross'
 import request from 'browser/util/request'
 
 interface State {

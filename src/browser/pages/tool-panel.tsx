@@ -65,6 +65,10 @@ class ToolPanel extends React.Component<Props, State> {
                             onClick={() => this.changeWorkmode('live-preview')}
                         >实时预览</span>
                     </li>
+                    <li>
+                        <h2>操作</h2>
+                        <a>保存文档</a>
+                    </li>
                 </ul>
             </div>
         )

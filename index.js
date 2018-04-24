@@ -33,6 +33,15 @@ function createWindow() {
         // when you should delete the corresponding element.
         mainWindow = null
     })
+
+    const webContents = mainWindow.webContents 
+    webContents.on('will-navigate', function (e, url) {
+        if (!/^file:/.test(url)) {
+            const shell = electron.shell
+            shell.openExternal(url)
+        }
+        e.preventDefault()
+    })
 }
 
 // This method will be called when Electron has finished

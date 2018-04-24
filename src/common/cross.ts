@@ -13,10 +13,31 @@ interface Document {
     content: string
 }
 
-export const patterns = {
-    'setup': new URLPattern('/setup'),
-    'document': new URLPattern('/pull/doc(/:id)'),
-    'save': new URLPattern('/push/doc(/:id)/save'),
-    'new': new URLPattern('/pull/new')
+export const systemActionPatterns = {
+    'setup': new URLPattern('/setup')
 }
 
+export const pullActionPatterns = {
+    'document': new URLPattern('/doc(/:id)'),
+    'new': new URLPattern('/new')
+}
+
+export const pushActionsPatterns = {
+    'save': new URLPattern('/doc(/:id)/save'),
+    'delete': new URLPattern('/doc(/:id)/delete')
+} 
+
+export const actionPatterns = Object.assign(
+    {}, systemActionPatterns, pullActionPatterns, 
+    pushActionsPatterns
+)
+
+export function matchPattern (path, patterns=actionPatterns) {
+    let match 
+    for (let key in patterns) {
+        if (match = patterns[key].match(path)) {
+            return match
+        }
+    }
+    return null
+}

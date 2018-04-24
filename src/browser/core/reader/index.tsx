@@ -2,10 +2,7 @@ import React from 'react'
 import { MAST, Block, Inline } from 'libs/markdown'
 import hljs from 'highlight.js'
 import classNames from 'classnames'
-
-/**
- * @TODO 用JSX来改造，更直观
- */
+import { dealSchemaRequest } from 'browser/util/request'
 
 const inline2ReactElement = (inline: Inline, index) => {
     switch (inline.type) {

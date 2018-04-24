@@ -382,7 +382,7 @@ inline_link =
     link / link_reference / autolink
 
 url =  
-    _0:_ ('https' / 'http' / 'ftp') '://' [a-zA-Z0-9\-_&%=?#./]+ _1:_
+    _0:_ ('yamer' / 'https' / 'http' / 'ftp') '://' [a-zA-Z0-9\-_&%=?#./]+ _1:_
     { return { type: 'text', content: text(), range: [_0,_1] } }
 
 autolink = 

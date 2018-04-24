@@ -1,5 +1,5 @@
 import URLPattern from 'url-pattern'
-import { patterns } from 'common/cross'
+import { actionPatterns } from 'common/cross'
 import { IncomingMessage } from 'http';
 
 import setup from './executors/setup'
@@ -12,8 +12,8 @@ const handlers = {
 
 const process = async function (req: IncomingMessage) {
     let match
-    for (let name in patterns) {
-        if (match = patterns[name].match(req.url)) {
+    for (let name in actionPatterns) {
+        if (match = actionPatterns[name].match(req.url)) {
             if (handlers[name]) {
                 req.setEncoding('utf8')
                 let text = '', chunk = ''
