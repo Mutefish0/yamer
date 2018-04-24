@@ -137,10 +137,10 @@ block =
     container_block / leaf_block
 
 leaf_block = 
-    block:(heading / list / thematic_break / link_reference_definition / blank_lines / paragraph)
+    heading / list / thematic_break / link_reference_definition / blank_lines / paragraph
 
 container_block = 
-    block:(code_block / blockquote)
+    code_block / blockquote
 
 blank_lines =
     _0:_ '\n'+ _1:_
@@ -336,7 +336,7 @@ text_without_inline_indicator =
     { return { type: 'text', content: text(), range: [_0,_1] } } 
 
 inline = 
-    inline:(hard_break / keyboard / code / image / inline_link / strong_emphasis / strong / emphasis / strikethrough / text_without_inline_indicator / inline_indicator)
+    hard_break / keyboard / code / image / inline_link / strong_emphasis / strong / emphasis / strikethrough / text_without_inline_indicator / inline_indicator
 
 keyboard = 
     _0:_ '`kbd' _1:_ space+ code:(special_character / [^\n`] / collapsed_whitespace)+ _2:_ '`' _3:_ 
@@ -394,12 +394,11 @@ autolink =
         }
     }
 
-link_child = 
-    inline:( 
-        image / strong_emphasis / strong / emphasis / strikethrough 
-        / (_0:_ [^\n`*_~\\\[\]!<]+ _1:_ { return { type: 'text', content: text(), range: [_0,_1] } })
-        / (_0:_ [`*_~\\\[!<] _1:_ { return { type: 'text', content: text(), range: [_0,_1] } })
-    )
+link_child =  
+    image / strong_emphasis / strong / emphasis / strikethrough 
+    / (_0:_ [^\n`*_~\\\[\]!<]+ _1:_ { return { type: 'text', content: text(), range: [_0,_1] } })
+    / (_0:_ [`*_~\\\[!<] _1:_ { return { type: 'text', content: text(), range: [_0,_1] } })
+    
 
 link_title = 
     space+ '"' title:(special_character / [^\n\"])+ '"'
