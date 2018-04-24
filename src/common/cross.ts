@@ -22,14 +22,14 @@ export const pullActionPatterns = {
     'new': new URLPattern('/new')
 }
 
-export const pushActionsPatterns = {
+export const pushActionPatterns = {
     'save': new URLPattern('/doc(/:id)/save'),
     'delete': new URLPattern('/doc(/:id)/delete')
 } 
 
 export const actionPatterns = Object.assign(
     {}, systemActionPatterns, pullActionPatterns, 
-    pushActionsPatterns
+    pushActionPatterns
 )
 
 export function matchPattern (path, patterns=actionPatterns) {

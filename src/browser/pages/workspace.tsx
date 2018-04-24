@@ -5,6 +5,7 @@ import ToolPanel,{ Workmode } from './tool-panel'
 import classNames from 'classnames'
 import { MAST } from 'libs/markdown'
 import { Subject } from 'rxjs'
+import DocumentContext, { Document } from './document-context'
 
 import request from 'browser/util/request'
 
@@ -15,13 +16,7 @@ interface Props {
 interface State {
     ast: MAST,
     workmode?: Workmode
-    document?: {
-        id: string
-        content: string
-        readOnly?: boolean
-        createSince?: number
-        lastModify?: number
-    }
+    document?: Document
 }
 
 class Workspace extends React.Component<Props, State> {
@@ -55,18 +50,20 @@ class Workspace extends React.Component<Props, State> {
 
     render () {
         return (
-            <div className={`workspace ${this.state.workmode}`}>
-                <Editor 
-                    defaultValue={this.state.document.content}
-                    onAstChange={ast => this.setState({ast})} 
-                    reactionSource={this.reactionSource} 
-                />
-                <Reader ast={this.state.ast} onReact={this.dealReaderReact.bind(this)}/>
-                <ToolPanel 
-                    workmode={this.state.workmode} 
-                    onChangeWorkmode={this.dealChangeWorkmode.bind(this)}
-                />
-            </div>
+            <DocumentContext.Provider value={this.state.document}>
+                <div className={`workspace ${this.state.workmode}`}>
+                    <Editor 
+                        defaultValue={this.state.document.content}
+                        onAstChange={ast => this.setState({ast})} 
+                        reactionSource={this.reactionSource} 
+                    />
+                    <Reader ast={this.state.ast} onReact={this.dealReaderReact.bind(this)}/>
+                    <ToolPanel 
+                        workmode={this.state.workmode} 
+                        onChangeWorkmode={this.dealChangeWorkmode.bind(this)}
+                    />
+                </div>
+            </DocumentContext.Provider>
         )
     }
 }
