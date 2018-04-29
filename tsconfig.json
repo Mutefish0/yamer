@@ -6,7 +6,8 @@
             "browser/*": ["src/browser/*"],
             "assets/*": ["src/browser/assets/*"],
 
-            "platform/*": ["src/platform/*"],
+            "platform/*": ["src/platform"],
+            "backend/*": ["src/backend/*"],
             "libs/*": ["libs/*"],
 
             "common/*": ["src/common/*"]

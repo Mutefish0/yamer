@@ -19,7 +19,7 @@ gulp.task('rollup-watch', cb => {
 })
 
 gulp.task('electron', cb => {
-    let child = spawn(electron, ['.'], { stdio: 'pipe' })
+    let child = spawn(electron, ['dist/platform'], { stdio: 'pipe' })
     child.on('close', code => {
         process.exit(code) 
     })

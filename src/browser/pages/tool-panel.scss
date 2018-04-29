@@ -48,6 +48,9 @@
             .active {
                 border-color: indianred;
             }
+            .disabled {
+                border: none;
+            }
         }
     }
 }

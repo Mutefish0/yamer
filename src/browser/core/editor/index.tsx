@@ -20,7 +20,8 @@ interface Props {
     placeholder?: string
     defaultValue?: string
 
-    onAstChange?: Function
+    onChange?: Function
+
     reactionSource?: Subject<Reaction>
 }
 
@@ -186,7 +187,7 @@ class Editor extends React.Component<Props, State> {
     static defaultProps = {
         placeholder: '',
         defaultValue: '',
-        onAstChange: function () {},
+        onChange: function () {},
         reactionSource: new Subject()
     }
 
@@ -195,7 +196,7 @@ class Editor extends React.Component<Props, State> {
         this.source = sourceElement.value 
         const ast = MarkdownParser.parse(this.source)
         this.setState({ ast })
-        this.props.onAstChange(ast)
+        this.props.onChange({ source: this.source, ast })
     }
 
     dealKeydown (e) {

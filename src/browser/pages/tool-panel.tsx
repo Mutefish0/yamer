@@ -1,13 +1,14 @@
 import React from 'react'
 import classNames from 'classnames'
-import DocumentContext, { Document } from './document-context'
+import WorkContext, { Workmode } from './work-context'
+import { Document } from 'common/cross'
+import request from 'browser/util/request'
 
 interface Props {
+    readOnly: boolean
     workmode: Workmode
     onChangeWorkmode: (mode: Workmode) => any
 }
-
-export type Workmode = 'edit' | 'preview' | 'live-preview'
 
 interface State {
     isHidden: boolean
@@ -23,9 +24,10 @@ class ToolPanel extends React.Component<Props, State> {
         }
     }
 
-    
     changeWorkmode (mode) {
-        this.props.onChangeWorkmode(mode)
+        if (!this.props.readOnly) {
+            this.props.onChangeWorkmode(mode)
+        }
     }
 
     showPanel () {
@@ -38,8 +40,8 @@ class ToolPanel extends React.Component<Props, State> {
 
     render () {
         return (
-            <DocumentContext.Consumer>
-            { document => (
+            <WorkContext.Consumer>
+            { ({ source, document }) => (
                 <div
                     className={classNames("tool-panel", { 'collapsed': this.state.isHidden})}
                     onBlur={this.hidePanel.bind(this)}
@@ -55,8 +57,10 @@ class ToolPanel extends React.Component<Props, State> {
                         <li className="setting live-preview">
                             <h2>工作模式</h2>
                             <span 
-                                
-                                className={classNames('button', {'active': this.props.workmode == 'edit'})}
+                                className={classNames('button', {
+                                    'active': this.props.workmode == 'edit',
+                                    'disabled': this.props.readOnly
+                                })}
                                 onClick={() => this.changeWorkmode('edit')}
                             >编辑</span>
                             <span
@@ -64,18 +68,17 @@ class ToolPanel extends React.Component<Props, State> {
                                 onClick={() => this.changeWorkmode('preview')}
                             >预览</span>
                             <span
-                                className={classNames('button', { 'active': this.props.workmode == 'live-preview' })}
-                                onClick={() => this.changeWorkmode('live-preview')}
+                                className={classNames('button', {
+                                    'active': this.props.workmode == 'live',
+                                    'disabled': this.props.readOnly
+                                })}
+                                onClick={() => this.changeWorkmode('live')}
                             >实时预览</span>
-                        </li>
-                        <li>
-                            <h2>操作</h2>
-                            <a>保存文档</a>
                         </li>
                     </ul>
                 </div>
             )}
-            </DocumentContext.Consumer>
+            </WorkContext.Consumer>
         )
     }
 }

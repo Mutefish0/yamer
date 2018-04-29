@@ -2,7 +2,7 @@
   "name": "yamer",
   "version": "1.0.0",
   "description": "极客的笔记本",
-  "main": "index.js",
+  "main": "dist/platform/index.js",
   "scripts": {
     "dev": "gulp",
     "markdown-playground": "electron markdown-cc/playground.html",

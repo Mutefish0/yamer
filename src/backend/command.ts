@@ -1,13 +1,17 @@
 import URLPattern from 'url-pattern'
 import { actionPatterns } from 'common/cross'
-import { IncomingMessage } from 'http';
+import { IncomingMessage } from 'http'
 
 import setup from './executors/setup'
 import document from './executors/document'
+import save from './executors/save'
+import list from './executors/list'
 
 const handlers = {
     'setup': setup,
-    'document': document
+    'document': document,
+    'save': save,
+    'list': list
 }
 
 const process = async function (req: IncomingMessage) {
@@ -16,12 +20,8 @@ const process = async function (req: IncomingMessage) {
         if (match = actionPatterns[name].match(req.url)) {
             if (handlers[name]) {
                 req.setEncoding('utf8')
-                let text = '', chunk = ''
-                while (chunk = req.read()) {
-                    text += chunk
-                }
                 try {
-                    return await handlers[name](match, text)
+                    return await handlers[name](match, req)
                 } catch (error) {
                     throw error
                 }

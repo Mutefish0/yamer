@@ -20,6 +20,26 @@ export default [{
         include: 'src/browser/**'
     }
 }, {
+        input: 'src/backend/index.ts',
+        output: {
+            file: 'dist/backend/index.js',
+            format: 'cjs',
+            sourcemap: true
+        },
+        plugins: [
+            typescript({
+                typescript: require('typescript')
+            }),
+            commonjs({
+                main: true,
+                include: ['src/backend/**', 'src/common/**', 'node_modules/**']
+            }),
+            resolve()
+        ],
+        watch: {
+            include: 'src/backend/**'
+        }
+}, {
         input: 'src/platform/index.ts',
         output: {
             file: 'dist/platform/index.js',
