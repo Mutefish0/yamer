@@ -121,6 +121,8 @@ class Editor extends React.Component<Props, State> {
     private previousRevisionedSelection: Selection 
     private source: string
     private cursorNappingTimeout
+    private selectionChanged: boolean
+    private clientTop: number
 
     constructor (props) {
         super(props)
@@ -131,6 +133,7 @@ class Editor extends React.Component<Props, State> {
             selection: [0, 0]
         }
         this.cursorNappingTimeout = null 
+        this.selectionChanged = false 
     }
 
     componentDidMount () {
@@ -154,6 +157,7 @@ class Editor extends React.Component<Props, State> {
         })
 
         diffSource.subscribe(range => {
+            this.selectionChanged = true
             this.setState({ isNapping: false, selection: range })
             clearTimeout(this.cursorNappingTimeout)
             setTimeout(() => this.setState({ isNapping: true }), 800)
@@ -176,6 +180,9 @@ class Editor extends React.Component<Props, State> {
                 default:
             }
         })
+
+        const shadowEditor = this.refs['shadow'] as HTMLDivElement
+        this.clientTop = shadowEditor.getClientRects()[0].top
     }
 
     componentWillReceiveProps (nextProps) {
@@ -259,6 +266,8 @@ class Editor extends React.Component<Props, State> {
         // 如果光标未闭合，无需操作
         if (this.state.selection[0] != this.state.selection[1]) {
             return 
+        } else {
+            this.selectionChanged = false
         }
 
         const cursorHost = document.querySelector('.editor [data-cursor-offset]') as HTMLSpanElement
@@ -279,10 +288,10 @@ class Editor extends React.Component<Props, State> {
                 // 如果前一个字符为'\n'则换行
                 if (prevChar == '\n') {
                     cursor.style.left = PADDING + 'px'
-                    cursor.style.top = shadowEditor.scrollTop + rect.top + LINE_HEIGHT + 'px'
+                    cursor.style.top = -this.clientTop + shadowEditor.scrollTop + rect.top + LINE_HEIGHT + 'px'
                 } else {
                     cursor.style.left = rect.left + 'px'
-                    cursor.style.top = shadowEditor.scrollTop + rect.top + 'px'
+                    cursor.style.top = -this.clientTop + shadowEditor.scrollTop + rect.top + 'px'
                 }
             }
         }

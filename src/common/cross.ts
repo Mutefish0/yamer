@@ -43,10 +43,10 @@ export interface Document {
     id: string
     title: string
     content: string
-    deprecated?: boolean
-    readOnly?: boolean
-    createSince?: number
-    lastModify?: number
+    deprecated: boolean
+    readOnly: boolean
+    createSince: number
+    lastModify: number
 }
 
 export interface DocumentMeta {
@@ -54,6 +54,7 @@ export interface DocumentMeta {
     title: string
     lastModify: number
 }
+
 
 export interface DocumentLike {
     content: string

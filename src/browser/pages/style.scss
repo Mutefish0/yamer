@@ -1,7 +1,15 @@
 @import "../core/core";
 @import "./tool-panel";
 
+$appbar-height: 42px;
+
+#app {
+    box-sizing: border-box;
+    padding-top: $appbar-height;
+}
+
 .workspace {
+    height: 100%;
     @include core;
     .tool-panel {
         @include tool-panel;
@@ -31,5 +39,64 @@
         .reader {
             left: 50%;
         }
+    }
+}
+
+@keyframes zoomIn {
+    0% {
+        transform: scale(0);
+    }
+    30% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes zoomOut {
+    0% {
+        transform: scale(1);
+    }
+    70% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(0);
+    }
+}
+
+.appbar { 
+    box-sizing: border-box;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: $appbar-height;
+    line-height: $appbar-height;
+    text-align: center;
+    -webkit-app-region: drag;
+    border-bottom: 1px solid #eee;
+    .doc-title {
+        position: relative;
+        line-height: $appbar-height;
+        &:after {
+            content: "";
+            position: absolute;
+            top: 4px;
+            right: -14px;
+            display: inline-block; 
+            width: 8px;
+            height: 8px;
+            border-radius: 4px;
+            background-color: indianred;
+            transform: scale(0);
+            animation: zoomOut 0.4s ease-in-out;
+            //transition: transform 0.4s;
+        }
+        &.modify-flag:after {
+            transform: scale(1);
+            animation: zoomIn 0.4s ease-in-out;
+        } 
     }
 }

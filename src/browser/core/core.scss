@@ -2,12 +2,8 @@
 @import './reader/index';
 
 @mixin core {
-    height: 100%;
     overflow-x: hidden;
     position: relative;
-    .headbar {
-        background: #EEF1F3;
-    } 
     .editor {
         position: absolute;
         top: 0%;

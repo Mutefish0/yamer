@@ -2,18 +2,19 @@ import React from 'react'
 import Editor, { Reaction } from 'browser/core/editor'
 import Reader from 'browser/core/reader'
 import ToolPanel from './tool-panel'
+import Loading from './loading'
+import Appbar from './appbar'
 import classNames from 'classnames'
 import { MAST } from 'libs/markdown'
 import { Subject } from 'rxjs'
 import WorkContext, { IWorkContext, Workmode } from './work-context'
-
+import { pullActionPatterns } from 'common/cross'
 import request from 'browser/util/request'
 import * as Mdutil from 'browser/util/mdutil'
 
 const { ipcRenderer } = require('electron')
 
 interface Props {
-
 }
 
 class Workspace extends React.Component<Props, IWorkContext> {
@@ -25,24 +26,28 @@ class Workspace extends React.Component<Props, IWorkContext> {
             ast: [],
             source: '',
             workmode: 'preview',
-            document: {
-                id: '',
-                content: '',
-                title: '',
-                readOnly: true
-            }
+            document: null
         }
+        
         this.reactionSource = new Subject()
 
-        ipcRenderer.on('accelerator', (e, action) => {
+        ipcRenderer.on('accelerator', async (e, action) => {
+            if (!this.state.document) {
+                return
+            }
+
             if (action == 'save') {
-                request('save', 
+                const resp = await request('save', 
                     { id: this.state.document.id }, 
                     {    
                         content: this.state.source, 
                         title: Mdutil.getTitle(this.state.source, this.state.ast) 
                     }
-                ) 
+                )
+                this.setState({ document: resp.result }) 
+            } else if (action == 'new') {
+                const resp = await request('new')
+                this.setState({ document: resp.result })
             }
         })
     }
@@ -61,22 +66,39 @@ class Workspace extends React.Component<Props, IWorkContext> {
         this.setState({ workmode })
     }
 
+    async dealSchemaRequest (path) {
+        const match = pullActionPatterns.document.match(path)
+        if (match) {
+            const resp = await request('document', { id: match.id })
+            this.setState({ document: resp.result })
+        }
+    }
+
     render () {
+        let pageView = this.state.document ? (
+            <div className={`workspace ${this.state.workmode}`}>
+                <Editor
+                    defaultValue={this.state.document.content}
+                    onChange={({ source, ast }) => this.setState({ ast, source })}
+                    reactionSource={this.reactionSource}
+                />
+                <Reader
+                    ast={this.state.ast}
+                    onReact={this.dealReaderReact.bind(this)}
+                    onSchemaRequest={this.dealSchemaRequest.bind(this)}
+                />
+                <ToolPanel
+                    readOnly={this.state.document.readOnly}
+                    workmode={this.state.workmode}
+                    onChangeWorkmode={this.dealChangeWorkmode.bind(this)}
+                />
+            </div>
+        ) : <Loading />
+
         return (
             <WorkContext.Provider value={this.state}>
-                <div className={`workspace ${this.state.workmode}`}>
-                    <Editor 
-                        defaultValue={this.state.document.content}
-                        onChange={({source, ast}) => this.setState({ast, source})} 
-                        reactionSource={this.reactionSource} 
-                    />
-                    <Reader ast={this.state.ast} onReact={this.dealReaderReact.bind(this)}/>
-                    <ToolPanel
-                        readOnly={this.state.document.readOnly} 
-                        workmode={this.state.workmode} 
-                        onChangeWorkmode={this.dealChangeWorkmode.bind(this)}
-                    />
-                </div>
+                <Appbar />
+                { pageView }
             </WorkContext.Provider>
         )
     }

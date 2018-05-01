@@ -2,7 +2,6 @@ import React from 'react'
 import { MAST, Block, Inline } from 'libs/markdown'
 import hljs from 'highlight.js'
 import classNames from 'classnames'
-import { dealSchemaRequest } from 'browser/util/request'
 
 const inline2ReactElement = (inline: Inline, index) => {
     switch (inline.type) {
@@ -87,19 +86,31 @@ const ast2ReactElement = function (ast: Block[]) {
 
 interface Props {
     ast?: MAST,
-    onReact?: Function
+    onReact?: Function,
+    onSchemaRequest?: Function
 }
 
 class Reader extends React.Component<Props> {
     static defaultProps = {
         ast: [],
-        onReact: function () {}
+        onReact: function () {},
+        onSchemaRequest: function () {}
+    }
+
+    dealClick (e) {
+        const url = e.target['href']
+        if (url) {
+            const match =  url.match(/^yamer:\/\/(.+)/)
+            if (match) {
+                this.props.onSchemaRequest(`/${match[1]}`)
+            }
+        }
     }
 
     render () {
         let view = ast2ReactElement.bind(this)(this.props.ast)
         return (
-            <div className="reader">
+            <div className="reader" onClick={this.dealClick.bind(this)}>
                 {view}
             </div>
         )

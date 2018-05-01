@@ -25,6 +25,25 @@ const configShortcuts = webContents => {
             ]
         },
         {
+            label: 'Document',
+            submenu: [
+                {
+                    label: 'Save',
+                    accelerator: 'Cmd+S',
+                    click () {
+                        webContents.send('accelerator', 'save')
+                    }
+                },
+                {
+                    label: 'New',
+                    accelerator: 'Cmd+N',
+                    click () {
+                        webContents.send('accelerator', 'new')
+                    }
+                }
+            ]
+        },
+        {
             label: 'View',
             submenu: [
                 { role: 'reload' },

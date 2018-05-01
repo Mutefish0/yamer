@@ -19,7 +19,7 @@ let mainURL = url.format({
 
 function createWindow() {
     // Create the browser window.
-    mainWindow = new BrowserWindow({ width: 1080, height: 760 })
+    mainWindow = new BrowserWindow({ width: 840, height: 680, titleBarStyle: 'hiddenInset' })
 
     // and load the index.html of the app.
     mainWindow.loadURL(mainURL)

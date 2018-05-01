@@ -6,12 +6,14 @@ import setup from './executors/setup'
 import document from './executors/document'
 import save from './executors/save'
 import list from './executors/list'
+import newdoc from './executors/new'
 
 const handlers = {
     'setup': setup,
     'document': document,
     'save': save,
-    'list': list
+    'list': list,
+    'new': newdoc
 }
 
 const process = async function (req: IncomingMessage) {

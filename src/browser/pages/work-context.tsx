@@ -10,18 +10,14 @@ export interface IWorkContext {
     ast: MAST
     source: string
     workmode: Workmode
-    document: Document
+    document?: Document
 }
 
 const defaultContext: IWorkContext = {
     ast: [],
     source: '',
     workmode: 'live',
-    document: {
-        id: '',
-        title: '还没想好~',
-        content: '',
-    }
+    document: null 
 }
 
 const WorkContext = React.createContext(defaultContext)
