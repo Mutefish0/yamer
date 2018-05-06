@@ -9,37 +9,42 @@ $appbar-height: 42px;
 }
 
 .workspace {
+    position: relative;
+    padding: 0 48px;
     height: 100%;
     @include core;
     .tool-panel {
         @include tool-panel;
     }
-    &.edit {
-        .editor {
-            right: 0%;
-        }
-        .reader {
-            z-index: -1;
-            left: 100%;
-        }
+
+    .preview {
+        display: none;
     }
-    &.preview {
-        .editor {
-            z-index: -1;
-            right: 100%;
-        }
-        .reader {
-            left: 0%;
-        }
-    }
-    &.live {
-        .editor {
-            right: 50%;
-        }
-        .reader {
-            left: 50%;
-        }
-    }
+
+    // &.edit {
+    //     .editor {
+    //         width: 100%;
+    //     }
+    //     .reader {
+    //         width: 0%;
+    //     }
+    // }
+    // &.preview {
+    //     .editor {
+    //         width: 0%;
+    //     }
+    //     .reader {
+    //         width: 100%;
+    //     }
+    // }
+    // &.live {
+    //     .editor {
+    //         width: 50%;
+    //     }
+    //     .reader {
+    //         width: 50%;
+    //     }
+    // }
 }
 
 @keyframes zoomIn {

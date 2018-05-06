@@ -10,18 +10,18 @@ export interface Respnose {
 }
 
 export const systemActionPatterns = {
-    'setup': new URLPattern('/setup')
+    'setup': new URLPattern('/api/setup')
 }
 
 export const pullActionPatterns = {
-    'document': new URLPattern('/doc(/:id)'),
-    'new': new URLPattern('/new'),
-    'list': new URLPattern('/list')
+    'document': new URLPattern('/api/doc(/:id)'),
+    'new': new URLPattern('/api/new'),
+    'list': new URLPattern('/api/list')
 }
 
 export const pushActionPatterns = {
-    'save': new URLPattern('/doc(/:id)/save'),
-    'delete': new URLPattern('/doc(/:id)/delete')
+    'save': new URLPattern('/api/doc(/:id)/save'),
+    'delete': new URLPattern('/api/doc(/:id)/delete')
 } 
 
 export const actionPatterns = Object.assign(

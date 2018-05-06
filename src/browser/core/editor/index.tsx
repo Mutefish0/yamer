@@ -123,6 +123,7 @@ class Editor extends React.Component<Props, State> {
     private cursorNappingTimeout
     private selectionChanged: boolean
     private clientTop: number
+    private clientLeft: number 
 
     constructor (props) {
         super(props)
@@ -181,8 +182,11 @@ class Editor extends React.Component<Props, State> {
             }
         })
 
+        // 记录编辑器的绝对位置，方便设置光标的位置
         const shadowEditor = this.refs['shadow'] as HTMLDivElement
-        this.clientTop = shadowEditor.getClientRects()[0].top
+        const rect = shadowEditor.getBoundingClientRect()
+        this.clientTop = rect.top
+        this.clientLeft = rect.left 
     }
 
     componentWillReceiveProps (nextProps) {
@@ -281,16 +285,21 @@ class Editor extends React.Component<Props, State> {
                 const offset = parseInt(cursorHost.getAttribute('data-cursor-offset'))
                 const prevCharOffset = parseInt(baseOffset) + offset;
                 const range = document.createRange()
+
                 range.setStart(textHost, offset)
                 range.setEnd(textHost, offset)
+
                 var rect = range.getBoundingClientRect()
+
                 const prevChar = this.source.slice(prevCharOffset - 1, prevCharOffset)
                 // 如果前一个字符为'\n'则换行
                 if (prevChar == '\n') {
-                    cursor.style.left = PADDING + 'px'
+                    cursor.style.left = PADDING  + 'px'
                     cursor.style.top = -this.clientTop + shadowEditor.scrollTop + rect.top + LINE_HEIGHT + 'px'
                 } else {
-                    cursor.style.left = rect.left + 'px'
+                    console.log(this.clientLeft)
+                    console.log(PADDING)
+                    cursor.style.left = - this.clientLeft + 14 + rect.left + 'px'
                     cursor.style.top = -this.clientTop + shadowEditor.scrollTop + rect.top + 'px'
                 }
             }

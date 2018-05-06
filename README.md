@@ -23,7 +23,7 @@
 ## Todo
 - 前后端分离（起一个本地服务器）
 
-## nodejs node_modules dep
+## node_modules dependence
 level
 
 

@@ -2,7 +2,7 @@ const { Menu, MenuItem } = require('electron')
 const menu = new Menu()
 
 const configShortcuts = webContents => {
-    const template:any = [
+    const template = [
         {
             label: 'Edit',
             submenu: [

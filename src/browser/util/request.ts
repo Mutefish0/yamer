@@ -4,7 +4,8 @@ const request = async function (name, params?: object, document?: object) {
     const pattern = actionPatterns[name]
     params = params || {}
     let method = document ? 'post' : 'get'
-    const url = `${domain}${pattern.stringify(params)}`
+    let reqDomain = process.env.NODE_ENV == 'development' ? window.location.origin : domain
+    const url = `${reqDomain}${pattern.stringify(params)}`
     let options = {
         method,
         headers: {

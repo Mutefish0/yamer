@@ -32,6 +32,7 @@ function assemHomeListDocument (list: Document[]): Document {
         lastModify,
         createSince,
         readOnly: true,
+        deprecated: false
     }
 }
 

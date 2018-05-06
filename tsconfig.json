@@ -14,14 +14,19 @@
         },
         "outDir": "dist",
         "module": "es2015",
-        "target": "es2017",
+        "target": "es6",
         "lib": [
-            "es6"
+            "es6",
+            "dom"
         ],
         "moduleResolution": "node",
         "allowSyntheticDefaultImports": true,
         "jsx": "react" 
     },
+    "include": [
+        "src/browser/**/*",
+        "src/common/**/*"
+    ],
     "exclude": [
         "node_modules"
     ]

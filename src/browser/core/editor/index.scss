@@ -2,6 +2,7 @@
 
 @mixin editor { 
     letter-spacing: normal;
+    position: relative;
     .source {
         position: absolute;
         z-index: -1;
@@ -19,8 +20,8 @@
         font-size: inherit;
         word-break: break-all;
     }
-
     .shadow {
+        position: relative;
         z-index: 1;
         width: 100%;
         height: 100%;

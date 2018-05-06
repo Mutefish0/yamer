@@ -18,10 +18,6 @@
 
 @mixin shadow {
     font-size: 14px;
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
     padding: 14px;
     background:#fff;
     color: #2c3f51;
@@ -125,7 +121,7 @@
     }
 
     .cursor {
-        z-index: -1;
+        z-index: 1;
         display: none;
         position: absolute;
         width: 22px;

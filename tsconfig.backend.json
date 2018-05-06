@@ -1,0 +1,43 @@
+{
+    "compilerOptions": {
+        "baseUrl": ".",
+        "paths": {
+            "src/*": [
+                "src/*"
+            ],
+            "browser/*": [
+                "src/browser/*"
+            ],
+            "assets/*": [
+                "src/browser/assets/*"
+            ],
+            "platform/*": [
+                "src/platform"
+            ],
+            "backend/*": [
+                "src/backend/*"
+            ],
+            "libs/*": [
+                "libs/*"
+            ],
+            "common/*": [
+                "src/common/*"
+            ]
+        },
+        "outDir": "dist",
+        "module": "es2015",
+        "target": "es2017",
+        "lib": [
+            "es2017"
+        ],
+        "moduleResolution": "node",
+        "allowSyntheticDefaultImports": true 
+    },
+    "include": [
+        "src/backend/**/*",
+        "src/common/**/*"
+    ],
+    "exclude": [
+        "node_modules"
+    ]
+}
