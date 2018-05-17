@@ -1,6 +1,6 @@
 @import './markdown';
 
-@mixin reader {
+.Reader {
     padding: 0 14px;
     overflow-y: auto;
     box-sizing: border-box;

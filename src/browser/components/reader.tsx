@@ -110,7 +110,7 @@ class Reader extends React.Component<Props> {
     render () {
         let view = ast2ReactElement.bind(this)(this.props.ast)
         return (
-            <div className="reader" onClick={this.dealClick.bind(this)}>
+            <div className="Reader" onClick={this.dealClick.bind(this)}>
                 {view}
             </div>
         )

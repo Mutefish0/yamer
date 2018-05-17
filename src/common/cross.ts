@@ -4,9 +4,9 @@ import { LevelUp } from 'levelup';
 export const port = 26303
 export const domain = `http://localhost:${port}`
 
-export interface Respnose {
+export interface Response {
     error?: string
-    result: JSON
+    result: any
 }
 
 export const systemActionPatterns = {

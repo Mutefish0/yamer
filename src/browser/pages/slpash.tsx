@@ -1,6 +1,6 @@
 import React from 'react'
 
-export default class SetupPage extends React.Component {
+export default class Splash extends React.Component {
     render () {
         return (
             <div>

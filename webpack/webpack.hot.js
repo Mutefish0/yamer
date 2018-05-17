@@ -14,7 +14,7 @@ module.exports = {
 	},
 	resolve: {
 		extensions: [ '.ts', '.tsx', '.js' ],
-		plugins: [new TsconfigPathsPlugin({ configFile: path.join(__dirname, '../tsconfig.json') }) ]
+		plugins: [ new TsconfigPathsPlugin({ configFile: path.join(__dirname, '../tsconfig.json') }) ]
 	},
 	module: {
 		rules: [
@@ -32,6 +32,33 @@ module.exports = {
 						loader: 'ts-loader',
 						options: {
 							transpileOnly: true
+						}
+					}
+				]
+			},
+			{
+				test: /\.s?css$/,
+				use: [
+					{
+						loader: 'style-loader' // creates style nodes from JS strings
+					},
+					{
+						loader: 'css-loader' // translates CSS into CommonJS
+					},
+					{
+						loader: 'sass-loader' // compiles Sass to CSS
+					}
+				]
+			},
+			{
+				test: /\.(png|jpg|gif|svg)$/,
+				use: [
+					{
+						loader: 'url-loader',
+						options: {
+							limit: 200,
+							outputPath: 'assets',
+							publicPath:'assets'
 						}
 					}
 				]

@@ -1,6 +1,8 @@
 import { domain, actionPatterns, matchPattern } from 'common/cross'
+import { Observable } from 'rxjs'
+import { Response } from 'common/cross'
 
-const request = async function (name, params?: object, document?: object) {
+const request = async function (name, params?: object, document?: object): Promise<Response> {
     const pattern = actionPatterns[name]
     params = params || {}
     let method = document ? 'post' : 'get'
@@ -19,5 +21,9 @@ const request = async function (name, params?: object, document?: object) {
     const response = await fetch(url, options)
     return await response.json()
 }
+
+const observableRequest = (...args): Observable<Response> => Observable.from(request.apply(null, args))
+
+export { observableRequest }
 
 export default request

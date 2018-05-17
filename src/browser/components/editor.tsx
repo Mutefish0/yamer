@@ -274,7 +274,7 @@ class Editor extends React.Component<Props, State> {
             this.selectionChanged = false
         }
 
-        const cursorHost = document.querySelector('.editor [data-cursor-offset]') as HTMLSpanElement
+        const cursorHost = document.querySelector('.Editor [data-cursor-offset]') as HTMLSpanElement
         const cursor = this.refs['cursor'] as HTMLSpanElement
         const shadowEditor = this.refs['shadow'] as HTMLDivElement
         
@@ -297,9 +297,7 @@ class Editor extends React.Component<Props, State> {
                     cursor.style.left = PADDING  + 'px'
                     cursor.style.top = -this.clientTop + shadowEditor.scrollTop + rect.top + LINE_HEIGHT + 'px'
                 } else {
-                    console.log(this.clientLeft)
-                    console.log(PADDING)
-                    cursor.style.left = - this.clientLeft + 14 + rect.left + 'px'
+                    cursor.style.left = - this.clientLeft + rect.left + 'px'
                     cursor.style.top = -this.clientTop + shadowEditor.scrollTop + rect.top + 'px'
                 }
             }
@@ -310,7 +308,7 @@ class Editor extends React.Component<Props, State> {
         const shadowViews = ast2ReactElements(this.source, this.state.ast, this.state.selection)
         const showCursor = this.state.selection[0] == this.state.selection[1]
         return (
-            <div className="editor">
+            <div className="Editor">
                 <textarea
                     className="source"
                     ref="source"

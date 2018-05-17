@@ -6,11 +6,7 @@ html, body, #app {
     font-weight: normal;
     line-height: 1.4;
     height: 100%; 
-}
-
-* {
-    padding: 0;
-    margin: 0;
+    overflow: hidden;
 }
 
 input {
@@ -36,5 +32,11 @@ h3 {
 
 [contenteditable] {
     outline: none;  
+}
+
+.AppContent {
+    padding: 0 64px;
+    height: 100%;
+    overflow-y: auto;
 }
  

@@ -13,13 +13,24 @@ module.exports = [
 		},
 		target: 'electron-main',
 		resolve: {
-			extensions: [ '.js' ]
+			extensions: [ '.js', '.json' ]
+		},
+		module: {
+			rules: [
+				{
+					test: /\.json$/,
+					use: 'json-loader'
+				}
+			]
 		},
 		plugins: [
 			new webpack.DefinePlugin({
 				DEFINE_DEV_URL: JSON.stringify(`http://${devServerConfig.host}:${devServerConfig.port}`)
 			})
-		]	
+		],
+		externals: {
+			'electron-devtools-installer': 'require("electron-devtools-installer")'
+		}	
 	},
 	{
 		mode: 'development',

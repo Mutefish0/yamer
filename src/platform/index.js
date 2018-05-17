@@ -8,13 +8,15 @@ const path = require('path')
 const url = require('url')
 
 import { configShortcuts } from './shortcuts'
+import  installExtentions from './devtools' 
+
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow
 
 let mainURL 
 if (process.env.NODE_ENV == 'development') {
-    mainURL = DEFINE_DEV_URL
+	mainURL = DEFINE_DEV_URL
 } else {
 	mainURL = url.format({
 		pathname: path.join(__dirname, '../browser/index.html'),
@@ -43,7 +45,7 @@ function createWindow () {
 
 	const webContents = mainWindow.webContents
 	webContents.on('will-navigate', function (e, url) {
-		if (!/^file:/.test(url)) {
+		if (!/^file|^http:\/\/localhost/.test(url)) {
 			const shell = electron.shell
 			shell.openExternal(url)
 		}
@@ -51,6 +53,10 @@ function createWindow () {
 	})
 
 	configShortcuts(webContents)
+
+	if (process.env.NODE_ENV == 'development') {
+		installExtentions()
+	}
 }
 
 // This method will be called when Electron has finished

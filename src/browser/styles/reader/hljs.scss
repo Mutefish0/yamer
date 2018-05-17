@@ -1,9 +1,4 @@
-/*
-
-github.com style (c) Vasily Polovnyov <vast@whiteants.net>
-
-*/
-@mixin github {
+@mixin hljs-github {
     .hljs {
     display: block;
     overflow-x: auto;
@@ -95,4 +90,3 @@ github.com style (c) Vasily Polovnyov <vast@whiteants.net>
     font-weight: bold;
     }
 }
-

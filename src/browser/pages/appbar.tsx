@@ -11,7 +11,7 @@ class Appbar extends React.Component<Props, State> {
 		return (
 			<WorkContext.Consumer>
 				{({ source, document }) => (
-					<section className='appbar'>
+					<section className='Appbar'>
 						{document && (
 							<span
 								className={classNames('doc-title', {

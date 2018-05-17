@@ -1,7 +1,6 @@
 import React from 'react'
-import Editor, { Reaction } from 'browser/core/editor'
-import Reader from 'browser/core/reader'
-import ToolPanel from './tool-panel'
+import Editor, { Reaction } from 'browser/modules/editor'
+import Reader from 'browser/modules/reader'
 import Loading from './loading'
 import Appbar from './appbar'
 import classNames from 'classnames'
@@ -67,7 +66,7 @@ class Workspace extends React.Component<Props, IWorkContext> {
     }
 
     async dealSchemaRequest (path) {
-        const match = pullActionPatterns.document.match(path)
+        const match = pullActionPatterns.document.match(`/api${path}`)
         if (match) {
             const resp = await request('document', { id: match.id })
             this.setState({ document: resp.result })
@@ -86,11 +85,6 @@ class Workspace extends React.Component<Props, IWorkContext> {
                     ast={this.state.ast}
                     onReact={this.dealReaderReact.bind(this)}
                     onSchemaRequest={this.dealSchemaRequest.bind(this)}
-                />
-                <ToolPanel
-                    readOnly={this.state.document.readOnly}
-                    workmode={this.state.workmode}
-                    onChangeWorkmode={this.dealChangeWorkmode.bind(this)}
                 />
             </div>
         ) : <Loading />
