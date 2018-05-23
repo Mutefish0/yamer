@@ -21,7 +21,7 @@ export const pullActionPatterns = {
 
 export const pushActionPatterns = {
     'save': new URLPattern('/api/doc(/:id)/save'),
-    'delete': new URLPattern('/api/doc(/:id)/delete')
+    'drop': new URLPattern('/api/doc(/:id)/drop')
 } 
 
 export const actionPatterns = Object.assign(
@@ -43,7 +43,6 @@ export interface Document {
     id: string
     title: string
     content: string
-    deprecated: boolean
     readOnly: boolean
     createSince: number
     lastModify: number
@@ -53,6 +52,7 @@ export interface DocumentMeta {
     id: string
     title: string
     lastModify: number
+    deprecated: boolean
 }
 
 

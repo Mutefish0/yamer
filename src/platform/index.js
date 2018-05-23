@@ -27,7 +27,7 @@ if (process.env.NODE_ENV == 'development') {
 
 function createWindow () {
 	// Create the browser window.
-	mainWindow = new BrowserWindow({ width: 840, height: 680, titleBarStyle: 'hiddenInset' })
+	mainWindow = new BrowserWindow({ width: 840, height: 680, minWidth: 640, titleBarStyle: 'hiddenInset' })
 
 	// and load the index.html of the app.
 	mainWindow.loadURL(mainURL)

@@ -16,6 +16,10 @@ $appbar-height: 42px;
     text-align: center;
     -webkit-app-region: drag;
     border-bottom: 1px solid #eee;
+    background-color: #fff;
+    a {
+        margin: 8px;
+    }
     .doc-title {
         position: relative;
         line-height: $appbar-height;

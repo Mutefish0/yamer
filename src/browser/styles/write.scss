@@ -1,0 +1,18 @@
+.WritePage {
+    .wrapper-editor, .wrapper-reader {
+        display: inline-block;
+    }
+    &.live {
+        .wrapper-editor, .wrapper-reader {
+            width: 50%;
+        }   
+    }
+    &.normal {
+       .wrapper-editor {
+            width: 100%;
+       }
+       .wrapper-reader {
+            display: none;
+        }  
+    }
+}

@@ -37,6 +37,12 @@ namespace ActionType {
     export const DOCUMENT_FULFIL_CREATE: 'DOCUMENT_FULFIL_CREATE' = 'DOCUMENT_FULFIL_CREATE'
     export const DOCUMENT_REJECT_CREATE: 'DOCUMENT_REJECT_CREATE' = 'DOCUMENT_REJECT_CREATE'
 
+    // 设置上次读过的文档的id
+    export const HISTORY_SET_LAST_READ_ID: 'HISTORY_SET_LAST_READ_ID' = 'HISTORY_SET_LAST_READ_ID'
+    // 设置上次编辑过的文档的id
+    export const HISTORY_SET_LAST_WRITE_ID: 'HISTORY_SET_LAST_WRITE_ID' = 'HISTORY_SET_LAST_WRITE_ID'
+    // 设置编辑模式，normal | live
+    export const HISTORY_TOGGLE_WRITE_MODE: 'HISTORY_TOGGLE_WRITE_MODE' = 'HISTORY_TOGGLE_WRITE_MODE'
 }
 
 export default ActionType

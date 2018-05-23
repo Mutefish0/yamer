@@ -11,11 +11,11 @@ export default async function () {
 
     const newDoc: Document = {
         id, title: '', content: '', readOnly: false, 
-        deprecated: false, lastModify, createSince: lastModify
+        lastModify, createSince: lastModify
     }
 
     const newDocMeta: DocumentMeta = {
-        id, title: '', lastModify
+        id, title: '', lastModify, deprecated: false
     }
 
     await db.batch([

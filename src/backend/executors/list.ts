@@ -9,6 +9,9 @@ export default async function () {
         prev.push(curr)
         return prev
     }, [])
+
+    const filteredList = list.filter(doc => !doc.deprecated)
+
     await db.close()
-    return list
+    return filteredList
 }

@@ -124,6 +124,8 @@ class Editor extends React.Component<Props, State> {
     private selectionChanged: boolean
     private clientTop: number
     private clientLeft: number 
+    private cursorChangeSubscription: Subscription
+    private reactionSubscription: Subscription
 
     constructor (props) {
         super(props)
@@ -157,7 +159,7 @@ class Editor extends React.Component<Props, State> {
             }
         })
 
-        diffSource.subscribe(range => {
+        this.cursorChangeSubscription = diffSource.subscribe(range => {
             this.selectionChanged = true
             this.setState({ isNapping: false, selection: range })
             clearTimeout(this.cursorNappingTimeout)
@@ -170,7 +172,7 @@ class Editor extends React.Component<Props, State> {
         }
 
         // 处理reaction
-        this.props.reactionSource.subscribe((action: Reaction) => {
+        this.reactionSubscription = this.props.reactionSource.subscribe((action: Reaction) => {
             switch (action.type) {
                 case 'click_checkbox':
                     const node = action.node
@@ -187,6 +189,11 @@ class Editor extends React.Component<Props, State> {
         const rect = shadowEditor.getBoundingClientRect()
         this.clientTop = rect.top
         this.clientLeft = rect.left 
+    }
+
+    componentWillUnmount () {
+        this.cursorChangeSubscription.unsubscribe()
+        this.reactionSubscription.unsubscribe()
     }
 
     componentWillReceiveProps (nextProps) {

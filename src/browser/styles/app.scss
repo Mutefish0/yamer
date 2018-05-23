@@ -7,6 +7,7 @@ html, body, #app {
     line-height: 1.4;
     height: 100%; 
     overflow: hidden;
+    background-color: #F9FAFB;
 }
 
 input {
@@ -35,6 +36,7 @@ h3 {
 }
 
 .AppContent {
+    position: relative;
     padding: 0 64px;
     height: 100%;
     overflow-y: auto;
