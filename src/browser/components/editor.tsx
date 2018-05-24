@@ -293,20 +293,32 @@ class Editor extends React.Component<Props, State> {
                 const prevCharOffset = parseInt(baseOffset) + offset;
                 const range = document.createRange()
 
-                range.setStart(textHost, offset)
-                range.setEnd(textHost, offset)
-
-                var rect = range.getBoundingClientRect()
-
                 const prevChar = this.source.slice(prevCharOffset - 1, prevCharOffset)
                 // 如果前一个字符为'\n'则换行
                 if (prevChar == '\n') {
-                    cursor.style.left = PADDING  + 'px'
-                    cursor.style.top = -this.clientTop + shadowEditor.scrollTop + rect.top + LINE_HEIGHT + 'px'
+                    let rect
+                    let length
+                    // 仅包换多个换行符的元素，通过部分的range获取ClientRect不可预测
+                    if (/^\n+$/.test(textHost.textContent)) {
+                        range.selectNodeContents(textHost)
+                        length = offset
+                    } else {
+                        range.setStart(textHost, offset)
+                        range.setEnd(textHost, offset)
+                        length = 1 
+                    }
+                    rect = range.getBoundingClientRect()
+                    cursor.style.left = PADDING + 'px'
+                    cursor.style.top = -this.clientTop + shadowEditor.scrollTop + rect.top + length * LINE_HEIGHT + 'px'
                 } else {
+                    range.setStart(textHost, offset)
+                    range.setEnd(textHost, offset)
+                    const rect = range.getBoundingClientRect()
+
                     cursor.style.left = - this.clientLeft + rect.left + 'px'
                     cursor.style.top = -this.clientTop + shadowEditor.scrollTop + rect.top + 'px'
                 }
+                
             }
         }
     }
@@ -336,6 +348,7 @@ class Editor extends React.Component<Props, State> {
                     ref="shadow"
                 >
                     {shadowViews}
+                    <span>{'\u001A'}</span>
                     <span className={classNames('cursor', { 'show': showCursor}) } ref="cursor" dangerouslySetInnerHTML={{ __html: Cursor }}>
                     </span>
                 </div>

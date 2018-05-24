@@ -1,6 +1,7 @@
 .WritePage {
     .wrapper-editor, .wrapper-reader {
         display: inline-block;
+        vertical-align: top;
     }
     &.live {
         .wrapper-editor, .wrapper-reader {

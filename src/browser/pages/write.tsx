@@ -9,9 +9,6 @@ import store, { State } from 'browser/store'
 import * as documentActions from 'browser/actions/document-actions'
 import * as historyActions from 'browser/actions/history-actions'
 import * as Mdutil from 'browser/util/mdutil'
-import Compiler from 'libs/markdown.js'
-
-import { push } from 'react-router-redux'
 
 interface Params {
     id: string
@@ -23,9 +20,19 @@ interface Props extends RouteComponentProps<Params> {
     writeMode: State['history']['writeMode']
 }
 
-class Write extends React.Component<Props> {
-    private autoSaveSubscription: Subscription 
+interface IState {
+    ast: MAST
+}
+
+class Write extends React.Component<Props, IState> {
     private sourceChangeSubject: Subject<{ source: string, ast: MAST }>
+
+    constructor (props) {
+        super(props)
+        this.state = {
+            ast: []
+        }
+    }
 
     componentWillMount () {
         const id = this.props.match.params.id
@@ -34,8 +41,14 @@ class Write extends React.Component<Props> {
 
         this.sourceChangeSubject = new Subject()
 
-        this.autoSaveSubscription = this.sourceChangeSubject.debounceTime(1000).subscribe(({ source, ast }) => {
-            store.dispatch(documentActions.startSave(this.props.document.id, source, Mdutil.getTitle(source, ast)))
+        // 自动保存
+        this.sourceChangeSubject.debounceTime(1000).subscribe(({ source, ast }) => {
+            this.props.document && store.dispatch(documentActions.startSave(this.props.document.id, source, Mdutil.getTitle(source, ast)))
+        })
+
+        // 更新提供给阅读器的语法树
+        this.sourceChangeSubject.subscribe(({ ast }) => {
+            this.setState({ ast })
         })
     }
 
@@ -78,13 +91,12 @@ class Write extends React.Component<Props> {
             )
         } else {
             if (this.props.document) {
-                const ast = Compiler.parse(this.props.document.content)
                 return (
                     <div className={`WritePage ${this.props.writeMode}`}>
                         <section className="wrapper-editor">
                             <Editor defaultValue={this.props.document.content} onChange={this.dealChange.bind(this)}/>
                         </section><section className="wrapper-reader">
-                            <Reader ast={ast}/>
+                            <Reader ast={this.state.ast}/>
                         </section>
                         <ul className="aside-tools">
                             <li><button onClick={this.dealCreate.bind(this)}>新建</button></li>
