@@ -1,5 +1,7 @@
 node_modules
 dist
 libs
+release
 .vscode
 yarn-error.log
+release

@@ -94,5 +94,5 @@ const configShortcuts = webContents => {
     Menu.setApplicationMenu(menu)
 }
 
-export { configShortcuts }
+module.exports = { configShortcuts }
 

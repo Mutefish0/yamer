@@ -7,8 +7,7 @@ const BrowserWindow = electron.BrowserWindow
 const path = require('path')
 const url = require('url')
 
-import { configShortcuts } from './shortcuts'
-import  installExtentions from './devtools' 
+const { configShortcuts } =  require('./shortcuts')
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -16,12 +15,11 @@ let mainWindow
 
 let mainURL 
 if (process.env.NODE_ENV == 'development') {
-	mainURL = DEFINE_DEV_URL
+	mainURL = 'http://localhost:8081'
 } else {
 	mainURL = url.format({
 		pathname: path.join(__dirname, '../browser/index.html'),
-		protocol: 'file:',
-		slashes: true
+		protocol: 'file'
 	})
 }
 
@@ -55,6 +53,7 @@ function createWindow () {
 	configShortcuts(webContents)
 
 	if (process.env.NODE_ENV == 'development') {
+		const installExtentions = require('./devtools')
 		installExtentions()
 	}
 }
@@ -83,11 +82,8 @@ app.on('activate', function () {
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
-process.stdout.on('data', function (data) {
-	data = JSON.parse(data)
-	if (data.command == 'reload') {
-		mainWindow.loadURL(data.url || mainURL)
-	}
-})
 
-//require('./dist/platform/index.js')
+if (process.env.NODE_ENV != 'development') {
+	// 启动本地服务器·
+	require('../backend')
+}

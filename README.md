@@ -8,23 +8,29 @@
 - Glup & Rollup
 
 ## 运行平台
-暂只支持Mac
+精力所限，暂只支持Mac
 
-## 特性（暂只实现部分
-- Markdown 语法高亮
-- 代码高亮
-- 支持导出为PDF或HTML文件
+## 特性
+- [x] Markdown 语法高亮
+- [x] 代码高亮
+- [ ] 支持导出为PDF或HTML文件，支持从本地导入md文件
+- [ ] 从URL导入（如简书、gitbook、github等）
 
 ## 其他
 本软件离不开以下优秀开源库的支持：
 - [PEG.js: Parser generator for JavaScript](http://pegjs.org/)
 - [highlight.js - Syntax highlighting for the Web](https://highlightjs.org/)
 
-## Todo
-- 前后端分离（起一个本地服务器）
+## 开发
+1. 生成Markdown解析器：`$ npm run generate-markdown-parser`
+2. 启动webpack-dev-server：`$ npm run dev-server`
+3. 启动本地API服务器：`$ npm run api-server`
+4. 启动Electron：`$ npm run electron`
 
-## node_modules dependence
-level
+## 构建/打包
+1. 生成Markdown解析器：`$ npm run generate-markdown-parser`
+2. 构建并打包：`$ npm run build`
+3. 可执行程序将在release目录下生成
 
 
 

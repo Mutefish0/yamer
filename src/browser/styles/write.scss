@@ -1,7 +1,11 @@
 .WritePage {
+    height: 100%;
+    overflow: hidden;
     .wrapper-editor, .wrapper-reader {
         display: inline-block;
         vertical-align: top;
+        height: 100%;
+        overflow-y: auto;
     }
     &.live {
         .wrapper-editor, .wrapper-reader {

@@ -1,6 +1,6 @@
-import installExtension, { REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS } from 'electron-devtools-installer'
+const { default: installExtension, REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS } = require('electron-devtools-installer')
 
-export default () => {
+module.exports = () => {
 	installExtension(REACT_DEVELOPER_TOOLS)
 		.then((name) => console.log(`Added Extension:  ${name}`))
 		.catch((err) => console.log('An error occurred: ', err))

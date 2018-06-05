@@ -2,9 +2,28 @@ const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin')
 const path = require('path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const devServerConfig = require('./dev-config')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+
+const isDev = process.env.NODE_ENV == 'development'
+const isProd = !isDev
+
+const plugins = [
+	new HtmlWebpackPlugin({
+		template: path.join(__dirname, '../index.html')
+	})
+]
+
+if (isProd) {
+	plugins.push(
+		new MiniCssExtractPlugin({
+			filename: "[name].css",
+			chunkFilename: "[id].css"
+		})
+	)
+}
 
 module.exports = {
-	mode: 'development',
+	mode: isDev ? 'development' : 'production',
 	devtool: 'inline-source-map',
 	target: 'electron-renderer',
 	entry: path.join(__dirname, '../src/browser/main.tsx'),
@@ -40,7 +59,7 @@ module.exports = {
 				test: /\.s?css$/,
 				use: [
 					{
-						loader: 'style-loader' // creates style nodes from JS strings
+						loader: isDev ? 'style-loader' : MiniCssExtractPlugin.loader
 					},
 					{
 						loader: 'css-loader' // translates CSS into CommonJS
@@ -65,11 +84,8 @@ module.exports = {
 			}
 		]
 	},
-	devServer: devServerConfig,
+	
+	devServer: isDev ? devServerConfig : {},
 
-	plugins: [
-		new HtmlWebpackPlugin({
-			template: path.join(__dirname, '../index.html')
-		})
-	]
+	plugins: plugins
 }

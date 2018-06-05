@@ -15,7 +15,6 @@ import createHistory from 'history/createHashHistory'
 import { ConnectedRouter } from 'react-router-redux'
 import * as appActions from 'browser/actions/app-actions'
 import * as documentActions from 'browser/actions/document-actions'
-import '../styles/index.scss'
 
 const Frame = ({ isSetupFulfiled }) =>
 		isSetupFulfiled ? 
