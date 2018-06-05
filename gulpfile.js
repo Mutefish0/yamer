@@ -23,7 +23,7 @@ gulp.task('pack', function () {
             'webpack', 'src', 'markdown-cc', 'libs', 'release',
             'index.html', 'global.d.ts', 'gulpfile', 'tsconfig.json',
             'tsconfig.backend.json',
-            'yarn', '.vscode', '.gitignore', 'README.md', 'app.icns'
+            'yarn', '.vscode', '.gitignore', 'README.md', 'app.icns', 'app.png'
         ].map(f => `^/${f}`),
         asar: true
     })
