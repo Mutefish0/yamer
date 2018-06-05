@@ -1,5 +1,8 @@
-# Yamer - Yet Another Markdown Editor and Reader
-使书写变得简单有趣
+<div align="center">
+  <img src="https://raw.githubusercontent.com/Mutefish0/yamer/master/app.png" width="256"/>
+  <h1>Yamer</h1>
+  <p>使书写变得简单有趣</p>
+</div>
 
 ## 技术栈
 - Electron
