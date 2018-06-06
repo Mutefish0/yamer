@@ -5,7 +5,9 @@
         display: inline-block;
         vertical-align: top;
         height: 100%;
-        overflow-y: auto;
+    }
+    .wrapper-reader {
+        overflow-x: auto;
     }
     &.live {
         .wrapper-editor, .wrapper-reader {

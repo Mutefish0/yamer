@@ -1,7 +1,7 @@
 .aside-tools {
-    position: absolute;
+    position: fixed;
     width: 64px;
-    top: 0;
+    top: $appbar-height;
     right: 0;
     padding: 14px 0;
     margin: 0;
