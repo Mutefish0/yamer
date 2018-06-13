@@ -53,6 +53,7 @@
     "immutable": "^3.8.2",
     "json-loader": "^0.5.7",
     "json-pretty-html": "^1.1.2",
+    "lodash": "^4.17.10",
     "merge2": "^1.2.2",
     "mini-css-extract-plugin": "^0.4.0",
     "mocha": "^4.0.1",

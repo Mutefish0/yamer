@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/Mutefish0/yamer/master/app.png" width="256"/>
+  <img src="https://raw.githubusercontent.com/Mutefish0/yamer/master/src/browser/assets/app.png" width="256"/>
   <h1>Yamer</h1>
   <p>使书写变得简单有趣</p>
 </div>

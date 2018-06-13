@@ -1,0 +1,19 @@
+.Splash {
+    position: relative;
+    height: 100%;
+    .center {
+        position: absolute; 
+        top: 50%;
+        left: 0;
+        width: 100%;
+        text-align: center;
+        transform: translateY(calc(-50% - 42px));
+        i {
+            display: inline-block;
+            height: 125px;
+            width: 125px; 
+            background-image: url('~assets/app.png');
+            background-size: 100%;
+        }
+    }
+}

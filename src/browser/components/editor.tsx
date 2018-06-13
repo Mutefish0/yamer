@@ -7,6 +7,7 @@ import { Subject, Observable, Subscription } from 'rxjs/Rx'
 import { MAST, Abstract } from 'libs/markdown'
 import classNames from 'classnames'
 import Cursor from './Cursor'
+import * as _ from 'lodash'
 
 const LINE_HEIGHT = 14 * 1.4
 const PADDING = 14
@@ -126,6 +127,9 @@ class Editor extends React.Component<Props, State> {
     private clientLeft: number 
     private cursorChangeSubscription: Subscription
     private reactionSubscription: Subscription
+
+    // @TODO 用Rxjs改写
+    private smoothScrollInterval 
 
     constructor (props) {
         super(props)
@@ -278,7 +282,7 @@ class Editor extends React.Component<Props, State> {
         if (this.state.selection[0] != this.state.selection[1]) {
             return 
         } else {
-            this.selectionChanged = false
+            //this.selectionChanged = false
         }
 
         const cursorHost = document.querySelector('.Editor [data-cursor-offset]') as HTMLSpanElement
@@ -318,9 +322,49 @@ class Editor extends React.Component<Props, State> {
                     cursor.style.left = - this.clientLeft + rect.left + 'px'
                     cursor.style.top = -this.clientTop + shadowEditor.scrollTop + rect.top + 'px'
                 }
+
+                if (this.selectionChanged) {
+                    this.selectionChanged = false 
+                    if (parseInt(cursor.style.top) > shadowEditor.offsetHeight + shadowEditor.scrollTop - 40) {
+                        this.scrollDown()
+                    } else if (parseInt(cursor.style.top) < shadowEditor.scrollTop + 40) {
+                        this.scrollUp()
+                    }
+                }
                 
             }
         }
+    }
+
+    // chrome 65 将引入scroll-behavor, 支持后可去掉相关逻辑
+    smoothScrollTo(top) {
+        const shadowEditor = this.refs['shadow'] as HTMLDivElement
+        const currTop = shadowEditor.scrollTop
+        const step = currTop < top ? 8 : -8
+        const frames = _.range(currTop, top, step)
+
+        if (this.smoothScrollInterval) {
+            clearInterval(this.smoothScrollInterval)
+        }
+
+        this.smoothScrollInterval = setInterval(() => {
+            if (frames.length) {
+                shadowEditor.scrollTop = frames.shift()
+            } else {
+                clearInterval(this.smoothScrollInterval)
+                this.smoothScrollInterval = null 
+            }
+        }, 20)
+    }
+
+    scrollUp () {
+        const shadowEditor = this.refs['shadow'] as HTMLDivElement
+        this.smoothScrollTo(shadowEditor.scrollTop - 200)
+    }
+
+    scrollDown () {
+        const shadowEditor = this.refs['shadow'] as HTMLDivElement
+        this.smoothScrollTo(shadowEditor.scrollTop + 200) 
     }
 
     render () {
