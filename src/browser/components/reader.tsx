@@ -3,65 +3,67 @@ import { MAST, Block, Inline } from 'libs/markdown'
 import hljs from 'highlight.js'
 import classNames from 'classnames'
 
-const inline2ReactElement = (inline: Inline, index) => {
+const inline2ReactElement = (inline: Inline) => {
+    const key = JSON.stringify(inline.range)
     switch (inline.type) {
         case 'hard_break':
-            return <br key={index} />
+            return <br key={key} />
         case 'code':
-            return <code key={index}>{inline.content}</code>
+            return <code key={key}>{inline.content}</code>
         case 'keyboard':
-            return <kbd key={index}>{inline.content}</kbd>
+            return <kbd key={key}>{inline.content}</kbd>
         case 'image':
             return (
-                <img key={index} src={inline.url} alt={inline.title} title={inline.title} />
+                <img key={key} src={inline.url} alt={inline.title} title={inline.title} />
             )
         case 'link':
             return (
-                <a href={inline.url} title={inline.title} key={index}>
+                <a href={inline.url} title={inline.title} key={key}>
                     {inline.children.map(inline2ReactElement)}
                 </a>
             )
         case 'strong_emphasis':
-            return <strong key={index}><em>{inline.content}</em></strong>
+            return <strong key={key}><em>{inline.content}</em></strong>
         case 'strong':
-            return <strong key={index}>{inline.content}</strong>
+            return <strong key={key}>{inline.content}</strong>
         case 'emphasis':
-            return <em key={index}>{inline.content}</em>
+            return <em key={key}>{inline.content}</em>
         case 'strikethrough':
-            return <del key={index}>{inline.content}</del>
+            return <del key={key}>{inline.content}</del>
         case 'text':
             return inline.content
     }
 }
 
-const block2ReactElement = function (block: Block, index) {
+const block2ReactElement = function (block: Block) {
+    const key = JSON.stringify(block.range)
     switch (block.type) {
         case 'blockquote':
-            return React.createElement('blockquote', { key: index }, block.children.map(block2ReactElement.bind(this)))
+            return React.createElement('blockquote', { key: key }, block.children.map(block2ReactElement.bind(this)))
         case 'blockquote_unit':
             return block.children.map(block2ReactElement.bind(this))
         case 'paragraph':
-            return React.createElement('p', { key: index }, block.children.map(inline2ReactElement))
+            return React.createElement('p', { key: key }, block.children.map(inline2ReactElement))
         case 'heading':
-            return React.createElement(`h${block.level}`, { key: index }, block.children.map(inline2ReactElement))
+            return React.createElement(`h${block.level}`, { key: key }, block.children.map(inline2ReactElement))
         case 'thematic_break':
-            return React.createElement('hr', { key: index })
+            return React.createElement('hr', { key: key })
         case 'code_block':
             let highlight = hljs.highlight(block.language, block.content, true)
             let code = React.createElement('code',
                 {
                     className: 'hljs',
                     lang: highlight.language,
-                    key: index,
+                    key: key,
                     dangerouslySetInnerHTML: { __html: highlight.value }
                 }
             )
-            return React.createElement('pre', { key: index }, code)
+            return React.createElement('pre', { key: key }, code)
         case 'list_item':
-            return React.createElement('li', { key: index }, block.children.map(inline2ReactElement))
+            return React.createElement('li', { key: key }, block.children.map(inline2ReactElement))
         case 'list_task_item':
             return (
-                <li key={index} className="task">
+                <li key={key} className="task">
                     <i
                         key="-1"
                         className={classNames(['checkbox', { 'checked': block.checked }])}
@@ -71,9 +73,9 @@ const block2ReactElement = function (block: Block, index) {
                 </li>
             )
         case 'list':
-            return React.createElement('ul', { key: index }, block.children.map(block2ReactElement.bind(this)))
+            return React.createElement('ul', { key: key }, block.children.map(block2ReactElement.bind(this)))
         case 'link_reference_definition':
-        case 'blank_lines':
+        case 'blank_line':
         default:
             return undefined
     }

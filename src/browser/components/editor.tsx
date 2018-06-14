@@ -2,7 +2,6 @@ import React from 'react'
 import MarkdownParser from 'libs/markdown.js'
 import Caret from 'browser/util/caret'
 import { CharCode } from 'browser/util/char-code'
-import * as R from 'ramda'
 import { Subject, Observable, Subscription } from 'rxjs/Rx'
 import { MAST, Abstract } from 'libs/markdown'
 import classNames from 'classnames'
@@ -23,6 +22,8 @@ interface Props {
 
     onChange?: Function
 
+    onSelectionChange? : Function
+
     reactionSource?: Subject<Reaction>
 }
 
@@ -42,7 +43,7 @@ const attachSelection = (source, range, selectionRange) => {
     const collapsed = selectionRange[0] == selectionRange[1]
     const leftJoin = Math.max(range[0], selectionRange[0])
     const rightJoin = Math.min(range[1], selectionRange[1])
-    const props = { key: range[0], 'data-range': range }
+    const props = { key: range[0], 'data-range':  JSON.stringify(range)}
     if (collapsed) {
         if (selectionRange[0] >= range[0] && selectionRange[0] <= range[1]) {
             props['data-cursor-offset'] = selectionRange[0] - range[0]
@@ -54,7 +55,7 @@ const attachSelection = (source, range, selectionRange) => {
         return [0, 1, 2].map(i => {
             const className = classNames[i], range = ranges[i]
             return range[0] < range[1] && (
-                <span key={range[0]} className={className} data-range={range}>
+                <span key={range[0]} className={className} data-range={JSON.stringify(range)}>
                     {slice.apply(source, range)}
                 </span>
             )
@@ -75,7 +76,7 @@ const astUnit2ReactElement = (source, unit: Abstract, selectionRange) => {
             var range = unit.ranges[key]
             if (cursor < range[0]) {
                 views.push(
-                    <span key={cursor} data-range={[cursor, range[0]]}>
+                    <span key={cursor} data-range={JSON.stringify([cursor, range[0]])}>
                         {attachSelection(source, [cursor, range[0]], selectionRange)}
                     </span>
                 )
@@ -88,13 +89,13 @@ const astUnit2ReactElement = (source, unit: Abstract, selectionRange) => {
                     const splitKey = key.split('children#')
                     if (splitKey[0] == '') {
                         views.push(
-                            <span key={cursor} data-range={range} className={splitKey[1]}>
+                            <span key={cursor} data-range={JSON.stringify(range)} className={splitKey[1]}>
                                 {children}
                             </span>
                         )
                     } else {
                         views.push(
-                            <span key={cursor} data-range={range} className={splitKey[0]}>
+                            <span key={cursor} data-range={JSON.stringify(range)} className={splitKey[0]}>
                                 {attachSelection(source, range, selectionRange)}
                             </span>
                         )
@@ -110,7 +111,7 @@ const astUnit2ReactElement = (source, unit: Abstract, selectionRange) => {
         views = children
     }
     return (
-        <span key={unit.range[0]} data-range={unit.range} className={unit.type}>{views}</span>
+        <span key={unit.range[0]} data-range={JSON.stringify(unit.range)} className={unit.type}>{views}</span>
     )
 }
 
@@ -166,6 +167,7 @@ class Editor extends React.Component<Props, State> {
         this.cursorChangeSubscription = diffSource.subscribe(range => {
             this.selectionChanged = true
             this.setState({ isNapping: false, selection: range })
+            this.props.onSelectionChange(range)
             clearTimeout(this.cursorNappingTimeout)
             setTimeout(() => this.setState({ isNapping: true }), 800)
         })
@@ -210,6 +212,7 @@ class Editor extends React.Component<Props, State> {
         placeholder: '',
         defaultValue: '',
         onChange: function () {},
+        onSelectionChange: function () {},
         reactionSource: new Subject()
     }
 
@@ -237,12 +240,12 @@ class Editor extends React.Component<Props, State> {
         const startContainer = range.startContainer.parentElement
         const endContainer = range.endContainer.parentElement
 
-        const sRang = startContainer.getAttribute('data-range')
-        const eRange = endContainer.getAttribute('data-range')
+        const sRang =  JSON.parse(startContainer.getAttribute('data-range'))
+        const eRange = JSON.parse(endContainer.getAttribute('data-range'))
 
         if (sRang && eRange) {
-            const baseStartOffset = parseInt(sRang.split(',')[0])
-            const baseEndOffset = parseInt(eRange.split(',')[0])
+            const baseStartOffset = sRang[0]
+            const baseEndOffset = eRange[0]
 
             let cursorRange: Selection = [baseStartOffset + range.startOffset, baseEndOffset + range.endOffset]
             const prevRange = this.previousRevisionedSelection
@@ -292,7 +295,7 @@ class Editor extends React.Component<Props, State> {
         if (cursorHost) {
             const textHost = cursorHost.childNodes[0]
             if (textHost) {
-                const baseOffset = cursorHost.getAttribute('data-range').split(',')[0]
+                const baseOffset =  JSON.parse(cursorHost.getAttribute('data-range'))[0]
                 const offset = parseInt(cursorHost.getAttribute('data-cursor-offset'))
                 const prevCharOffset = parseInt(baseOffset) + offset;
                 const range = document.createRange()

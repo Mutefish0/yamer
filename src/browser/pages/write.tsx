@@ -84,6 +84,11 @@ class Write extends React.Component<Props, IState> {
         store.dispatch(documentActions.startCreate())
     }
 
+    // 编辑器光标改变，阅读器自动滚动到对应的Markdown块
+    dealSelectionChange (range) {
+        console.log(range)
+    }
+
     render () {
         if (this.props.isFetching) {
             return (
@@ -94,7 +99,10 @@ class Write extends React.Component<Props, IState> {
                 return (
                     <div className={`WritePage ${this.props.writeMode}`}>
                         <section className="wrapper-editor">
-                            <Editor defaultValue={this.props.document.content} onChange={this.dealChange.bind(this)}/>
+                            <Editor defaultValue={this.props.document.content} 
+                                onChange={this.dealChange.bind(this)}
+                                onSelectionChange={this.dealSelectionChange.bind(this)}
+                                />
                         </section><section className="wrapper-reader">
                             <Reader ast={this.state.ast}/>
                         </section>
