@@ -14,7 +14,7 @@ const { configShortcuts } =  require('./shortcuts')
 let mainWindow
 
 let mainURL 
-if (process.env.NODE_ENV == 'development') {
+if (process.env.NODE_ENV === 'development') {
 	mainURL = 'http://localhost:8081'
 } else {
 	mainURL = url.format({
@@ -26,7 +26,8 @@ if (process.env.NODE_ENV == 'development') {
 function createWindow () {
 	// Create the browser window.
 	mainWindow = new BrowserWindow({ 
-		width: 840, height: 680, minWidth: 640, titleBarStyle: 'hiddenInset'
+		width: 840, height: 680, minWidth: 640, titleBarStyle: 'hiddenInset',
+		webPreferences: { experimentalFeatures: true, devTools: process.env.NODE_ENV === 'development' }
 	})
 
 	// and load the index.html of the app.

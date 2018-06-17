@@ -21,7 +21,6 @@
 		resize: none;
 		font-family: inherit;
 		font-size: inherit;
-		word-break: break-all;
 	}
 	.shadow {
 		position: relative;
@@ -34,9 +33,9 @@
 		color: #2c3f51;
 		box-sizing: border-box;
 		overflow-y: auto;
+		scroll-behavior: smooth;
 		white-space: pre-wrap;
 		word-wrap: break-word;
-		word-break: break-all;
 		cursor: text;
 
 		.code_block {
@@ -111,6 +110,10 @@
 		}
 		.keyboard {
 			font-family: Menlo;
+		}
+
+		.blank_line::before {
+			content: " ";
 		}
 
 		&.focused .selected {

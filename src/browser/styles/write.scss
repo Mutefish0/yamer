@@ -6,9 +6,6 @@
         vertical-align: top;
         height: 100%;
     }
-    .wrapper-reader {
-        overflow-x: auto;
-    }
     &.live {
         .wrapper-editor, .wrapper-reader {
             width: 50%;

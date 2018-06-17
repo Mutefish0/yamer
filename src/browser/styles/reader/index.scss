@@ -2,7 +2,12 @@
 
 .Reader {
     padding: 0 14px;
-    overflow-y: auto;
     box-sizing: border-box;
     @include markdown;
+    &.scroll {
+        position: relative; // 计算offsetTop需要
+        overflow-y: auto;
+        scroll-behavior: smooth; 
+        height: 100%;
+    }
 }

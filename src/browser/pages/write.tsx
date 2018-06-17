@@ -1,9 +1,9 @@
 import React from 'react'
-import { Subscription, Subject } from 'rxjs'
+import { Subscription, Subject, Observable } from 'rxjs'
 import { RouteComponentProps } from 'react-router'
 import { MAST } from 'libs/markdown'
 import { connect } from 'react-redux'
-import Editor from 'browser/components/editor'
+import Editor, { ScrollPosition } from 'browser/components/editor'
 import Reader from 'browser/components/reader'
 import store, { State } from 'browser/store' 
 import * as documentActions from 'browser/actions/document-actions'
@@ -26,6 +26,13 @@ interface IState {
 
 class Write extends React.Component<Props, IState> {
     private sourceChangeSubject: Subject<{ source: string, ast: MAST }>
+
+    private readerScrollSubject: Subject<ScrollPosition> 
+    private editorScrollSubject: Subject<ScrollPosition> 
+
+    private readerScrollLock: boolean
+    private editorScrollLock: boolean
+        
 
     constructor (props) {
         super(props)
@@ -50,6 +57,25 @@ class Write extends React.Component<Props, IState> {
         this.sourceChangeSubject.subscribe(({ ast }) => {
             this.setState({ ast })
         })
+
+        // 滚动同步
+        this.readerScrollSubject = new Subject()
+        this.editorScrollSubject = new Subject()
+
+        this.readerScrollSubject.subscribe(() => {
+            this.readerScrollLock = true
+        })
+        this.readerScrollSubject.debounceTime(1000).subscribe(() => {
+            this.readerScrollLock = false
+        })
+
+        this.editorScrollSubject.subscribe(() => {
+            this.editorScrollLock = true 
+        })
+        this.editorScrollSubject.debounceTime(1000).subscribe(() => {
+            this.editorScrollLock = false
+        })
+
     }
 
     componentWillUnmount () {
@@ -58,6 +84,9 @@ class Write extends React.Component<Props, IState> {
         // 调用complete则会立即执行最后一个pending中的事件，可以保证最后的更改被保存了
         // See: https://goo.gl/PFfA1H
         this.sourceChangeSubject.complete()
+
+        this.readerScrollSubject.complete()
+        this.editorScrollSubject.complete()
     }
 
     componentWillReceiveProps (nextProps) {
@@ -84,11 +113,6 @@ class Write extends React.Component<Props, IState> {
         store.dispatch(documentActions.startCreate())
     }
 
-    // 编辑器光标改变，阅读器自动滚动到对应的Markdown块
-    dealSelectionChange (range) {
-        console.log(range)
-    }
-
     render () {
         if (this.props.isFetching) {
             return (
@@ -101,10 +125,15 @@ class Write extends React.Component<Props, IState> {
                         <section className="wrapper-editor">
                             <Editor defaultValue={this.props.document.content} 
                                 onChange={this.dealChange.bind(this)}
-                                onSelectionChange={this.dealSelectionChange.bind(this)}
+                                scrollSource={this.editorScrollSubject}
+                                onScroll={scrollPosition => !this.editorScrollLock && this.readerScrollSubject.next(scrollPosition)}
                                 />
                         </section><section className="wrapper-reader">
-                            <Reader ast={this.state.ast}/>
+                            <Reader  
+                                overflowAuto={true} ast={this.state.ast} 
+                                scrollSource={this.readerScrollSubject}
+                                onScroll={scrollPosition => !this.readerScrollLock && this.editorScrollSubject.next(scrollPosition)}
+                            /> 
                         </section>
                         <ul className="aside-tools">
                             <li><button onClick={this.dealCreate.bind(this)}>新建</button></li>

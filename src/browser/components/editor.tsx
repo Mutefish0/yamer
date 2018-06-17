@@ -6,7 +6,7 @@ import { Subject, Observable, Subscription } from 'rxjs/Rx'
 import { MAST, Abstract } from 'libs/markdown'
 import classNames from 'classnames'
 import Cursor from './Cursor'
-import * as _ from 'lodash'
+
 
 const LINE_HEIGHT = 14 * 1.4
 const PADDING = 14
@@ -16,15 +16,22 @@ export interface Reaction {
     node: Abstract
 }
 
+// 视图顶部的Block块range，以及隐藏的比例0~1
+export interface ScrollPosition {
+    rangeWindow: [[number, number], [number, number]]
+    vanishment: number  // 0~1
+}
+
 interface Props {
     placeholder?: string
     defaultValue?: string
 
     onChange?: Function
 
-    onSelectionChange? : Function
-
     reactionSource?: Subject<Reaction>
+
+    onScroll?: (scrollPosition: ScrollPosition) => any
+    scrollSource?: Observable<ScrollPosition>
 }
 
 type Selection = [number, number]
@@ -123,14 +130,12 @@ class Editor extends React.Component<Props, State> {
     private previousRevisionedSelection: Selection 
     private source: string
     private cursorNappingTimeout
-    private selectionChanged: boolean
     private clientTop: number
     private clientLeft: number 
     private cursorChangeSubscription: Subscription
     private reactionSubscription: Subscription
 
-    // @TODO 用Rxjs改写
-    private smoothScrollInterval 
+    private scrollSubscription?: Subscription
 
     constructor (props) {
         super(props)
@@ -141,7 +146,6 @@ class Editor extends React.Component<Props, State> {
             selection: [0, 0]
         }
         this.cursorNappingTimeout = null 
-        this.selectionChanged = false 
     }
 
     componentDidMount () {
@@ -165,11 +169,12 @@ class Editor extends React.Component<Props, State> {
         })
 
         this.cursorChangeSubscription = diffSource.subscribe(range => {
-            this.selectionChanged = true
             this.setState({ isNapping: false, selection: range })
-            this.props.onSelectionChange(range)
+            
             clearTimeout(this.cursorNappingTimeout)
             setTimeout(() => this.setState({ isNapping: true }), 800)
+
+            this.checkCursorInView()
         })
 
         // 设置默认source
@@ -195,11 +200,21 @@ class Editor extends React.Component<Props, State> {
         const rect = shadowEditor.getBoundingClientRect()
         this.clientTop = rect.top
         this.clientLeft = rect.left 
+
+        // 处理滚动
+        if (this.props.scrollSource) {
+            this.scrollSubscription = this.props.scrollSource.subscribe(scrollPosiiton => this.scrollTo(scrollPosiiton))
+        }
+
     }
 
     componentWillUnmount () {
         this.cursorChangeSubscription.unsubscribe()
         this.reactionSubscription.unsubscribe()
+
+        if (this.scrollSubscription) {
+            this.scrollSubscription.unsubscribe()
+        }
     }
 
     componentWillReceiveProps (nextProps) {
@@ -213,7 +228,10 @@ class Editor extends React.Component<Props, State> {
         defaultValue: '',
         onChange: function () {},
         onSelectionChange: function () {},
-        reactionSource: new Subject()
+        reactionSource: new Subject(),
+
+        onScroll: null,
+        scrollSource: null
     }
 
     dealSourceChange () {
@@ -284,9 +302,7 @@ class Editor extends React.Component<Props, State> {
         // 如果光标未闭合，无需操作
         if (this.state.selection[0] != this.state.selection[1]) {
             return 
-        } else {
-            //this.selectionChanged = false
-        }
+        } 
 
         const cursorHost = document.querySelector('.Editor [data-cursor-offset]') as HTMLSpanElement
         const cursor = this.refs['cursor'] as HTMLSpanElement
@@ -325,49 +341,116 @@ class Editor extends React.Component<Props, State> {
                     cursor.style.left = - this.clientLeft + rect.left + 'px'
                     cursor.style.top = -this.clientTop + shadowEditor.scrollTop + rect.top + 'px'
                 }
-
-                if (this.selectionChanged) {
-                    this.selectionChanged = false 
-                    if (parseInt(cursor.style.top) > shadowEditor.offsetHeight + shadowEditor.scrollTop - 40) {
-                        this.scrollDown()
-                    } else if (parseInt(cursor.style.top) < shadowEditor.scrollTop + 40) {
-                        this.scrollUp()
-                    }
-                }
                 
             }
         }
     }
 
-    // chrome 65 将引入scroll-behavor, 支持后可去掉相关逻辑
-    smoothScrollTo(top) {
+    // 检查光标是否快要脱离视野，若满足条件，则自动滚动
+    checkCursorInView () {
         const shadowEditor = this.refs['shadow'] as HTMLDivElement
-        const currTop = shadowEditor.scrollTop
-        const step = currTop < top ? 8 : -8
-        const frames = _.range(currTop, top, step)
+        const cursor = this.refs['cursor'] as HTMLSpanElement
 
-        if (this.smoothScrollInterval) {
-            clearInterval(this.smoothScrollInterval)
+        if (parseInt(cursor.style.top) > shadowEditor.offsetHeight + shadowEditor.scrollTop - 40) {
+            this.scrollDown()
+        } else if (parseInt(cursor.style.top) < shadowEditor.scrollTop + 40) {
+            this.scrollUp()
         }
-
-        this.smoothScrollInterval = setInterval(() => {
-            if (frames.length) {
-                shadowEditor.scrollTop = frames.shift()
-            } else {
-                clearInterval(this.smoothScrollInterval)
-                this.smoothScrollInterval = null 
-            }
-        }, 20)
     }
+
 
     scrollUp () {
         const shadowEditor = this.refs['shadow'] as HTMLDivElement
-        this.smoothScrollTo(shadowEditor.scrollTop - 200)
+        shadowEditor.scrollTop = shadowEditor.scrollTop - 100
     }
 
     scrollDown () {
         const shadowEditor = this.refs['shadow'] as HTMLDivElement
-        this.smoothScrollTo(shadowEditor.scrollTop + 200) 
+        shadowEditor.scrollTop = shadowEditor.scrollTop + 100
+    }
+
+    scrollTo (scrollPosition: ScrollPosition) {
+        const shadowEditor = this.refs['shadow'] as HTMLElement
+        
+        const startEl = scrollPosition.rangeWindow[0] ?
+            shadowEditor.querySelector(`[data-range="${JSON.stringify(scrollPosition.rangeWindow[0])}"]`) as HTMLElement
+            : null
+        const endEl = scrollPosition.rangeWindow[1] ? 
+            shadowEditor.querySelector(`[data-range="${JSON.stringify(scrollPosition.rangeWindow[1])}"]`) as HTMLElement
+            : null
+        let offsetTopStart = startEl ? startEl.offsetTop : 0
+        let offsetTopEnd
+        if (endEl) {
+            offsetTopEnd = endEl.offsetTop
+        } else {
+             const lastEl = shadowEditor.children[shadowEditor.children.length - 1] as HTMLElement
+             offsetTopEnd = lastEl.offsetTop + lastEl.offsetHeight + 24 // 24 当做一个固定的margin         
+        }
+
+        shadowEditor.scrollTop = scrollPosition.vanishment * (offsetTopEnd - offsetTopStart) + offsetTopStart
+    }
+
+    // 计算ScrollPosition
+    dealScroll (e) {
+        if (!this.props.onScroll) {
+            return
+        }
+
+        const hostElement = e.currentTarget 
+        const ranges = this.state.ast.map(b => b.range)
+        const types = this.state.ast.map(b => b.type)
+        // 二分法
+        let start = 0, end = ranges.length - 1
+        while (start <= end) {
+            let mid = Math.floor((start + end) / 2)
+            let el = hostElement.querySelector(`[data-range="${JSON.stringify(ranges[mid])}"]`)
+            if (el.offsetTop - PADDING > hostElement.scrollTop) {
+                end = mid - 1
+            } else if (el.offsetTop - PADDING + el.offsetHeight <= hostElement.scrollTop) {
+                start = mid + 1
+            } else {
+                let rangeStart, indexStart = mid - 1
+                let rangeEnd, indexEnd = mid + 1
+
+                while (indexStart > -1) {
+                    if (types[indexStart] !== 'blank_line') {
+                        rangeStart = ranges[indexStart]
+                        break
+                    }
+                    indexStart--
+                }
+                
+                while (indexEnd < ranges.length) {
+                    if (types[indexEnd] !== 'blank_line') {
+                        rangeEnd = ranges[indexEnd]
+                        break
+                    }
+                    indexEnd++
+                }
+
+                let offsetTopStart, offsetTopEnd
+                
+                if (rangeStart) {
+                    offsetTopStart = hostElement.querySelector(`[data-range="${JSON.stringify(rangeStart)}"]`).offsetTop
+                } else {
+                    offsetTopStart = 0
+                }
+
+                if (rangeEnd) {
+                    offsetTopEnd = hostElement.querySelector(`[data-range="${JSON.stringify(rangeEnd)}"]`).offsetTop
+                } else {
+                    const endEl = hostElement.children[hostElement.children.length - 1]
+                    offsetTopEnd = endEl.offsetTop + endEl.offsetHeight + 24 // 24 当做一个固定的margin
+                }
+
+                let vanishment = (hostElement.scrollTop - offsetTopStart) / (offsetTopEnd - offsetTopStart) 
+                this.props.onScroll({ 
+                    rangeWindow: [rangeStart, rangeEnd], 
+                    vanishment
+                })
+                return
+            }
+        }
     }
 
     render () {
@@ -393,6 +476,7 @@ class Editor extends React.Component<Props, State> {
                         { 'focused': this.state.isFocused }
                     ])}
                     ref="shadow"
+                    onScroll={this.dealScroll.bind(this)}
                 >
                     {shadowViews}
                     <span>{'\u001A'}</span>
