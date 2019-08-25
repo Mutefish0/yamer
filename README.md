@@ -35,5 +35,5 @@
 2. 构建并打包：`$ npm run build`
 3. 可执行程序将在release目录下生成
 
-
-
+## Release
+[Mac版下载](https://github.com/Mutefish0/yamer/archive/0.0.1.zip)
